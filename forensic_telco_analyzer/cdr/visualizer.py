@@ -5,7 +5,7 @@ class CDRVisualizer:
     def __init__(self, cdr_data):
         self.data = cdr_data
 
-    def plot_call_frequency(self, top_n=10):
+    def plot_call_frequency(self, top_n=10, save_path=None):
         cdr_data = self.data
         # Find the column containing destination numbers
         dest_col = None
@@ -25,9 +25,13 @@ class CDRVisualizer:
         plt.xlabel('Phone Number')
         plt.ylabel('Number of Calls')
         plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path)
+        
         return plt
 
-    def plot_call_duration_histogram(self):
+    def plot_call_duration_histogram(self, save_path=None):
         cdr_data = self.data
         """Plot histogram of call durations"""
         # Find the column containing call duration
@@ -47,4 +51,8 @@ class CDRVisualizer:
         plt.xlabel('Duration (seconds)')
         plt.ylabel('Frequency')
         plt.tight_layout()
+        
+        if save_path:
+            plt.savefig(save_path)
+        
         return plt

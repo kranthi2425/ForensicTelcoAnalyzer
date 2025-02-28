@@ -2,6 +2,7 @@ import argparse
 import os
 import sys
 import pandas as pd
+import matplotlib.pyplot as plt
 
 # Add project root to path to enable absolute imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -16,6 +17,8 @@ from forensic_telco_analyzer.ipdr.voip_extractor import VoIPExtractor
 from forensic_telco_analyzer.tdr.parser import TDRParser
 from forensic_telco_analyzer.tdr.analyzer import TDRAnalyzer
 from forensic_telco_analyzer.tdr.geo_mapper import GeoMapper
+from forensic_telco_analyzer.dashboard.app import app
+from forensic_telco_analyzer.correlation.engine import CorrelationEngine
 
 def main():
     parser = argparse.ArgumentParser(description='Forensic Telecommunications Analysis Tool')
@@ -24,7 +27,9 @@ def main():
     parser.add_argument('--tdr', help='Path to Tower Dump Record file')
     parser.add_argument('--tower-locations', help='Path to tower location data')
     parser.add_argument('--output', help='Output directory for results')
-    
+    parser.add_argument('--dashboard', action='store_true', help='Launch dashboard')
+    parser.add_argument('--correlate', action='store_true', help='Perform cross-data correlation between CDR, IPDR, and TDR')
+
     args = parser.parse_args()
     
     # Create output directory if specified
@@ -42,6 +47,22 @@ def main():
     # Process TDR file if provided
     if args.tdr:
         process_tdr(args.tdr, args.tower_locations, args.output)
+
+    # Perform cross-data correlation if specified
+    if args.correlate:
+        process_correlation(args.cdr, args.ipdr, args.tdr, args.output)
+
+    # Launch dashboard if specified
+    if args.dashboard:
+        print("Launching dashboard...")
+        import webbrowser
+        from threading import Timer
+        
+        def open_browser():
+            webbrowser.open_new("http://127.0.0.1:8050/")
+        
+        Timer(1, open_browser).start()
+        app.run_server(debug=True, port=8050)
     
     # If no input files specified, show help
     if not (args.cdr or args.ipdr or args.tdr):
@@ -150,17 +171,33 @@ def process_tdr(tdr_file, tower_locations_file, output_dir):
                 # Get unique IMSIs
                 imsis = tdr_data['imsi'].unique()
                 
+                print(f"Creating movement maps for {min(5, len(imsis))} IMSIs...")
+                
                 # Create movement maps for each IMSI (limit to first 5 for demonstration)
                 for i, imsi in enumerate(imsis[:5]):
+                    print(f"  Processing IMSI {imsi}...")
                     movement_map = geo_mapper.create_movement_map(imsi)
                     if output_dir:
-                        movement_map.save(os.path.join(output_dir, f'movement_map_{imsi}.html'))
+                        map_path = os.path.join(output_dir, f'movement_map_{imsi}.html')
+                        movement_map.save(map_path)
+                        print(f"  Movement map for IMSI {imsi} saved to {map_path}")
+                
+                # Create a heatmap of tower activity
+                print("Creating tower activity heatmap...")
+                heatmap = geo_mapper.create_heatmap(output_dir)
+                
+                # Create a multi-IMSI comparison map (if we have at least 2 IMSIs)
+                if len(imsis) >= 2:
+                    print("Creating multi-IMSI comparison map...")
+                    multi_map = geo_mapper.create_multi_imsi_map(imsis[:5], output_dir)
                 
                 # Calculate movement speeds for each IMSI
+                print("Calculating movement speeds...")
                 for i, imsi in enumerate(imsis[:5]):
                     speeds = geo_mapper.calculate_movement_speed(imsi)
                     if not speeds.empty and output_dir:
                         speeds.to_csv(os.path.join(output_dir, f'movement_speed_{imsi}.csv'), index=False)
+                        print(f"  Movement speeds for IMSI {imsi} saved to {output_dir}")
         
         # Save analysis results
         if output_dir:
@@ -170,13 +207,36 @@ def process_tdr(tdr_file, tower_locations_file, output_dir):
             # If we have at least two IMSIs, find co-location
             imsis = tdr_data['imsi'].unique()
             if len(imsis) >= 2:
+                print("Analyzing co-location patterns...")
                 co_location = analyzer.find_co_location(imsis[0], imsis[1])
                 if not co_location.empty:
                     co_location.to_csv(os.path.join(output_dir, 'co_location_analysis.csv'), index=False)
+                    print(f"Co-location analysis saved to {output_dir}")
             
             print(f"TDR analysis complete. Results saved to {output_dir}")
     else:
         print("Failed to parse TDR file.")
+
+def process_correlation(cdr_file, ipdr_file, tdr_file, output_dir):
+    """Perform cross-data correlation and save results."""
+    print("Starting cross-data correlation...")
+
+    # Initialize the Correlation Engine
+    engine = CorrelationEngine()
+
+    # Load data into the engine
+    engine.load_data(cdr_file=cdr_file, ipdr_file=ipdr_file, tdr_file=tdr_file)
+
+    # Perform correlations
+    cdr_tdr_results = engine.correlate_cdr_tdr()
+    ipdr_cdr_results = engine.correlate_ipdr_cdr()
+    all_correlations = engine.correlate_all()
+
+    # Save results to output directory
+    if output_dir:
+        engine.save_results(output_dir)
+
+    print("Cross-data correlation complete. Results saved.")
 
 if __name__ == "__main__":
     main()

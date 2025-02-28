@@ -25,7 +25,7 @@
             <meta name="viewport" content="width=device-width,
                 initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
             <style>
-                #map_da87f8921983b1f8b69afc5c06df6de5 {
+                #map_3ee1bb969529c9e532de2a51c3ed7b7a {
                     position: relative;
                     width: 100.0%;
                     height: 100.0%;
@@ -35,18 +35,28 @@
                 .leaflet-container { font-size: 1rem; }
             </style>
         
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.10.2/jquery-ui.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/iso8601-js-period@0.2.1/iso8601.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.18.1/moment.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/8.4/styles/default.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet-timedimension@1.1.1/dist/leaflet.timedimension.control.css"/>
 </head>
 <body>
     
     
-            <div class="folium-map" id="map_da87f8921983b1f8b69afc5c06df6de5" ></div>
+            <div class="folium-map" id="map_3ee1bb969529c9e532de2a51c3ed7b7a" ></div>
         
 </body>
 <script>
     
     
-            var map_da87f8921983b1f8b69afc5c06df6de5 = L.map(
-                "map_da87f8921983b1f8b69afc5c06df6de5",
+            var map_3ee1bb969529c9e532de2a51c3ed7b7a = L.map(
+                "map_3ee1bb969529c9e532de2a51c3ed7b7a",
                 {
                     center: [13.714194398369235, 87.75856198371429],
                     crs: L.CRS.EPSG3857,
@@ -63,7 +73,7 @@
 
         
     
-            var tile_layer_a60038a8724eb4ccff703cbbc358b3c2 = L.tileLayer(
+            var tile_layer_395623e95bbe60d0e5694ee4c712ab2f = L.tileLayer(
                 "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
                 {
   "minZoom": 0,
@@ -80,553 +90,816 @@
             );
         
     
-            tile_layer_a60038a8724eb4ccff703cbbc358b3c2.addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            tile_layer_395623e95bbe60d0e5694ee4c712ab2f.addTo(map_3ee1bb969529c9e532de2a51c3ed7b7a);
         
     
-            var marker_727dd7579b2fc569018097588c146fdf = L.marker(
+            var layer_control_116b3348cc0f82f2b7dbe49b94e549e1_layers = {
+                base_layers : {
+                    "openstreetmap" : tile_layer_395623e95bbe60d0e5694ee4c712ab2f,
+                },
+                overlays :  {
+                    "Cell Towers" : marker_cluster_992e1ec704222b9e372ac1debdac7f36,
+                },
+            };
+            let layer_control_116b3348cc0f82f2b7dbe49b94e549e1 = L.control.layers(
+                layer_control_116b3348cc0f82f2b7dbe49b94e549e1_layers.base_layers,
+                layer_control_116b3348cc0f82f2b7dbe49b94e549e1_layers.overlays,
+                {
+  "position": "topright",
+  "collapsed": true,
+  "autoZIndex": true,
+}
+            ).addTo(map_3ee1bb969529c9e532de2a51c3ed7b7a);
+
+        
+    
+            var marker_cluster_992e1ec704222b9e372ac1debdac7f36 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_e8b7e469f151d67ef1192dead82052fc = L.marker(
                 [13.714194398369235, 87.75856198371429],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_8b753d4ed0a684aa9001d22ede421d7a = L.AwesomeMarkers.icon(
+            var icon_27def271a53898f9e142e5ed66247cc1 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_727dd7579b2fc569018097588c146fdf.setIcon(icon_8b753d4ed0a684aa9001d22ede421d7a);
+            marker_e8b7e469f151d67ef1192dead82052fc.setIcon(icon_27def271a53898f9e142e5ed66247cc1);
         
     
-        var popup_ead84591e7d7bfe50a36e1e3ce3ad0b8 = L.popup({
-  "maxWidth": "100%",
+        var popup_fd8f23c08f81b650ad9a6b67b216a378 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_a5c3b11497f46607a4fe144a78de942d = $(`<div id="html_a5c3b11497f46607a4fe144a78de942d" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-21 01:03:35<br>Tower: CELL-8443</div>`)[0];
-                popup_ead84591e7d7bfe50a36e1e3ce3ad0b8.setContent(html_a5c3b11497f46607a4fe144a78de942d);
+                var html_354308aa7797625c22743ce21c25f8d2 = $(`<div id="html_354308aa7797625c22743ce21c25f8d2" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-21 01:03:35<br>                     <b>Tower ID:</b> CELL-8443<br>                 <b>Called Number:</b> 91320873131<br><b>Call Duration:</b> 1049 seconds<br></div></div>`)[0];
+                popup_fd8f23c08f81b650ad9a6b67b216a378.setContent(html_354308aa7797625c22743ce21c25f8d2);
             
         
 
-        marker_727dd7579b2fc569018097588c146fdf.bindPopup(popup_ead84591e7d7bfe50a36e1e3ce3ad0b8)
+        marker_e8b7e469f151d67ef1192dead82052fc.bindPopup(popup_fd8f23c08f81b650ad9a6b67b216a378)
         ;
 
         
     
     
-            var marker_82fd6402b42ae8c772697739e3a39b7d = L.marker(
+            marker_e8b7e469f151d67ef1192dead82052fc.bindTooltip(
+                `<div>
+                     Tower: CELL-8443 - 2025-02-21 01:03:35
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_25d5be4e1ef3b2686d0a643de271c266 = L.marker(
                 [26.746844581251512, 78.51425102910513],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_88b9cc2dcea2569aa3540c149cd0a242 = L.AwesomeMarkers.icon(
+            var icon_baf521787827675fb8599a0deb3d8816 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_82fd6402b42ae8c772697739e3a39b7d.setIcon(icon_88b9cc2dcea2569aa3540c149cd0a242);
+            marker_25d5be4e1ef3b2686d0a643de271c266.setIcon(icon_baf521787827675fb8599a0deb3d8816);
         
     
-        var popup_2f2a8d9750dc64e8e6dce757ea7902c1 = L.popup({
-  "maxWidth": "100%",
+        var popup_c6da0171b32e71ea126cd3ec97f689c4 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_e289c12bbac95f2b6d01158031baf201 = $(`<div id="html_e289c12bbac95f2b6d01158031baf201" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-21 02:03:40<br>Tower: CELL-0910</div>`)[0];
-                popup_2f2a8d9750dc64e8e6dce757ea7902c1.setContent(html_e289c12bbac95f2b6d01158031baf201);
+                var html_653d5f287d4f3e9844f84535f54788db = $(`<div id="html_653d5f287d4f3e9844f84535f54788db" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-21 02:03:40<br>                     <b>Tower ID:</b> CELL-0910<br>                 <b>Called Number:</b> 91820233464<br><b>Call Duration:</b> 94 seconds<br></div></div>`)[0];
+                popup_c6da0171b32e71ea126cd3ec97f689c4.setContent(html_653d5f287d4f3e9844f84535f54788db);
             
         
 
-        marker_82fd6402b42ae8c772697739e3a39b7d.bindPopup(popup_2f2a8d9750dc64e8e6dce757ea7902c1)
+        marker_25d5be4e1ef3b2686d0a643de271c266.bindPopup(popup_c6da0171b32e71ea126cd3ec97f689c4)
         ;
 
         
     
     
-            var marker_3fc82416c572eca3d2cabdf547b0b791 = L.marker(
+            marker_25d5be4e1ef3b2686d0a643de271c266.bindTooltip(
+                `<div>
+                     Tower: CELL-0910 - 2025-02-21 02:03:40
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_283e2048070704de06f6ae21f5f62d89 = L.marker(
                 [11.239401417172491, 70.32050920652054],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_5976086c5212ee3f17b5733df2c4c932 = L.AwesomeMarkers.icon(
+            var icon_42c6c59187b2ad38cc3e19e6e24dd2ac = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_3fc82416c572eca3d2cabdf547b0b791.setIcon(icon_5976086c5212ee3f17b5733df2c4c932);
+            marker_283e2048070704de06f6ae21f5f62d89.setIcon(icon_42c6c59187b2ad38cc3e19e6e24dd2ac);
         
     
-        var popup_015559787dc9c5503400ab8360af8af2 = L.popup({
-  "maxWidth": "100%",
+        var popup_ecd3805a8d1238ec2896d0f922788aa6 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_4b7da9b82ab61fccc50790e8ff9b7981 = $(`<div id="html_4b7da9b82ab61fccc50790e8ff9b7981" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-21 02:08:46<br>Tower: CELL-5703</div>`)[0];
-                popup_015559787dc9c5503400ab8360af8af2.setContent(html_4b7da9b82ab61fccc50790e8ff9b7981);
+                var html_153f495d5bb0616d93a6e0a61bb432d9 = $(`<div id="html_153f495d5bb0616d93a6e0a61bb432d9" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-21 02:08:46<br>                     <b>Tower ID:</b> CELL-5703<br>                 <b>Called Number:</b> 91497105822<br><b>Call Duration:</b> 1255 seconds<br></div></div>`)[0];
+                popup_ecd3805a8d1238ec2896d0f922788aa6.setContent(html_153f495d5bb0616d93a6e0a61bb432d9);
             
         
 
-        marker_3fc82416c572eca3d2cabdf547b0b791.bindPopup(popup_015559787dc9c5503400ab8360af8af2)
+        marker_283e2048070704de06f6ae21f5f62d89.bindPopup(popup_ecd3805a8d1238ec2896d0f922788aa6)
         ;
 
         
     
     
-            var marker_e9e11e981028bcfe561b3612132836b2 = L.marker(
+            marker_283e2048070704de06f6ae21f5f62d89.bindTooltip(
+                `<div>
+                     Tower: CELL-5703 - 2025-02-21 02:08:46
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_aac48e1d157ea8f0d36ee2c0929e412a = L.marker(
                 [29.94714677780636, 73.4400341530237],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_93e9bbcb2dd4563a5fe89cf594bd0d07 = L.AwesomeMarkers.icon(
+            var icon_360c7cad89b941c12b7a18564ecac3f1 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_e9e11e981028bcfe561b3612132836b2.setIcon(icon_93e9bbcb2dd4563a5fe89cf594bd0d07);
+            marker_aac48e1d157ea8f0d36ee2c0929e412a.setIcon(icon_360c7cad89b941c12b7a18564ecac3f1);
         
     
-        var popup_f21b194f501454654cbd7cc47b96366d = L.popup({
-  "maxWidth": "100%",
+        var popup_80eb74a08013c9a5a33b2f82dd3db168 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_75aa8c6525e627e7f1effc30eb47031c = $(`<div id="html_75aa8c6525e627e7f1effc30eb47031c" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-21 08:44:51<br>Tower: CELL-9505</div>`)[0];
-                popup_f21b194f501454654cbd7cc47b96366d.setContent(html_75aa8c6525e627e7f1effc30eb47031c);
+                var html_debaa5f2746ea36bfd57750af197ea80 = $(`<div id="html_debaa5f2746ea36bfd57750af197ea80" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-21 08:44:51<br>                     <b>Tower ID:</b> CELL-9505<br>                 <b>Called Number:</b> 91304542653<br><b>Call Duration:</b> 1351 seconds<br></div></div>`)[0];
+                popup_80eb74a08013c9a5a33b2f82dd3db168.setContent(html_debaa5f2746ea36bfd57750af197ea80);
             
         
 
-        marker_e9e11e981028bcfe561b3612132836b2.bindPopup(popup_f21b194f501454654cbd7cc47b96366d)
+        marker_aac48e1d157ea8f0d36ee2c0929e412a.bindPopup(popup_80eb74a08013c9a5a33b2f82dd3db168)
         ;
 
         
     
     
-            var marker_9cfc9008f933d54b2be6ed2be6f40490 = L.marker(
+            marker_aac48e1d157ea8f0d36ee2c0929e412a.bindTooltip(
+                `<div>
+                     Tower: CELL-9505 - 2025-02-21 08:44:51
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1e2c2adba9c053d1fe0daa8516e5ed37 = L.marker(
                 [16.932493497559744, 96.47772339864906],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_df3c6146348060110850acaa95f3e1fa = L.AwesomeMarkers.icon(
+            var icon_b317fb315c6f9de08aa48f5d7529e938 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_9cfc9008f933d54b2be6ed2be6f40490.setIcon(icon_df3c6146348060110850acaa95f3e1fa);
+            marker_1e2c2adba9c053d1fe0daa8516e5ed37.setIcon(icon_b317fb315c6f9de08aa48f5d7529e938);
         
     
-        var popup_7ec8016f262bdac5dad31158888aeeef = L.popup({
-  "maxWidth": "100%",
+        var popup_3b680cb555aaaf16d147dfed82dc42e6 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_02324a9a134d927d5d48b18c3a185b0b = $(`<div id="html_02324a9a134d927d5d48b18c3a185b0b" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-22 02:10:53<br>Tower: CELL-8473</div>`)[0];
-                popup_7ec8016f262bdac5dad31158888aeeef.setContent(html_02324a9a134d927d5d48b18c3a185b0b);
+                var html_ed8b9707173515f9be10f01f0f29a405 = $(`<div id="html_ed8b9707173515f9be10f01f0f29a405" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-22 02:10:53<br>                     <b>Tower ID:</b> CELL-8473<br>                 <b>Called Number:</b> 91135015963<br><b>Call Duration:</b> 740 seconds<br></div></div>`)[0];
+                popup_3b680cb555aaaf16d147dfed82dc42e6.setContent(html_ed8b9707173515f9be10f01f0f29a405);
             
         
 
-        marker_9cfc9008f933d54b2be6ed2be6f40490.bindPopup(popup_7ec8016f262bdac5dad31158888aeeef)
+        marker_1e2c2adba9c053d1fe0daa8516e5ed37.bindPopup(popup_3b680cb555aaaf16d147dfed82dc42e6)
         ;
 
         
     
     
-            var marker_8e2e723db7cff2545ba04d1b7972e9a7 = L.marker(
+            marker_1e2c2adba9c053d1fe0daa8516e5ed37.bindTooltip(
+                `<div>
+                     Tower: CELL-8473 - 2025-02-22 02:10:53
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_31b1ea4a10f9dcff4a02ae525826786d = L.marker(
                 [15.482767181773736, 85.9173956882509],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_bf107f0ef55560af4be22d8be86b59fc = L.AwesomeMarkers.icon(
+            var icon_336e46cddcb80b899098a7851f102a08 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_8e2e723db7cff2545ba04d1b7972e9a7.setIcon(icon_bf107f0ef55560af4be22d8be86b59fc);
+            marker_31b1ea4a10f9dcff4a02ae525826786d.setIcon(icon_336e46cddcb80b899098a7851f102a08);
         
     
-        var popup_9af30cf973cf3700bb74a5ad85cc6e5c = L.popup({
-  "maxWidth": "100%",
+        var popup_8a1b505512e34e48b11fc0acf831d548 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_4d6945e028ee24e7718790e06f812a8e = $(`<div id="html_4d6945e028ee24e7718790e06f812a8e" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-22 06:33:26<br>Tower: CELL-8476</div>`)[0];
-                popup_9af30cf973cf3700bb74a5ad85cc6e5c.setContent(html_4d6945e028ee24e7718790e06f812a8e);
+                var html_b3ad38293f3c4ffa5d608c050bbf984d = $(`<div id="html_b3ad38293f3c4ffa5d608c050bbf984d" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-22 06:33:26<br>                     <b>Tower ID:</b> CELL-8476<br>                 <b>Called Number:</b> 91135015963<br><b>Call Duration:</b> 912 seconds<br></div></div>`)[0];
+                popup_8a1b505512e34e48b11fc0acf831d548.setContent(html_b3ad38293f3c4ffa5d608c050bbf984d);
             
         
 
-        marker_8e2e723db7cff2545ba04d1b7972e9a7.bindPopup(popup_9af30cf973cf3700bb74a5ad85cc6e5c)
+        marker_31b1ea4a10f9dcff4a02ae525826786d.bindPopup(popup_8a1b505512e34e48b11fc0acf831d548)
         ;
 
         
     
     
-            var marker_13287ad16be23a5256ba78155d9ab8b1 = L.marker(
+            marker_31b1ea4a10f9dcff4a02ae525826786d.bindTooltip(
+                `<div>
+                     Tower: CELL-8476 - 2025-02-22 06:33:26
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1967dfb716e8356ec6d50e0d2ba3b34e = L.marker(
                 [28.546271129852094, 68.49869742372809],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_c2922bca406f937cc54b361b945a86cf = L.AwesomeMarkers.icon(
+            var icon_59f8e6a8de5096653fc2b019ca5640fb = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_13287ad16be23a5256ba78155d9ab8b1.setIcon(icon_c2922bca406f937cc54b361b945a86cf);
+            marker_1967dfb716e8356ec6d50e0d2ba3b34e.setIcon(icon_59f8e6a8de5096653fc2b019ca5640fb);
         
     
-        var popup_afb20aec3fe226bede7846ad7c1e6b4f = L.popup({
-  "maxWidth": "100%",
+        var popup_6d3ef3841b0a76623ee895483556185c = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_2cf2b4f19436d14d80abbc73b385fe56 = $(`<div id="html_2cf2b4f19436d14d80abbc73b385fe56" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-23 11:10:49<br>Tower: CELL-7820</div>`)[0];
-                popup_afb20aec3fe226bede7846ad7c1e6b4f.setContent(html_2cf2b4f19436d14d80abbc73b385fe56);
+                var html_78f915cda20a6836141b8c00b0fcc3ca = $(`<div id="html_78f915cda20a6836141b8c00b0fcc3ca" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-23 11:10:49<br>                     <b>Tower ID:</b> CELL-7820<br>                 <b>Called Number:</b> 91111111495<br><b>Call Duration:</b> 1448 seconds<br></div></div>`)[0];
+                popup_6d3ef3841b0a76623ee895483556185c.setContent(html_78f915cda20a6836141b8c00b0fcc3ca);
             
         
 
-        marker_13287ad16be23a5256ba78155d9ab8b1.bindPopup(popup_afb20aec3fe226bede7846ad7c1e6b4f)
+        marker_1967dfb716e8356ec6d50e0d2ba3b34e.bindPopup(popup_6d3ef3841b0a76623ee895483556185c)
         ;
 
         
     
     
-            var marker_343b186acfada95dfd0acd5533053014 = L.marker(
+            marker_1967dfb716e8356ec6d50e0d2ba3b34e.bindTooltip(
+                `<div>
+                     Tower: CELL-7820 - 2025-02-23 11:10:49
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_6c558238aeca0e0471a592d16046b733 = L.marker(
                 [13.715332578543606, 86.66513019888622],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_a06969bba83e9c1130091446a1f1b228 = L.AwesomeMarkers.icon(
+            var icon_fcd0bf3c7c0ff85b3303148a487b8cf9 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_343b186acfada95dfd0acd5533053014.setIcon(icon_a06969bba83e9c1130091446a1f1b228);
+            marker_6c558238aeca0e0471a592d16046b733.setIcon(icon_fcd0bf3c7c0ff85b3303148a487b8cf9);
         
     
-        var popup_4351ba04dc4aa39134ebffc5170bb5e3 = L.popup({
-  "maxWidth": "100%",
+        var popup_e91333f444a1f8484ae923e934c9ccab = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_621a35feba2de6d55aab6e16257598ed = $(`<div id="html_621a35feba2de6d55aab6e16257598ed" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-24 13:29:38<br>Tower: CELL-2265</div>`)[0];
-                popup_4351ba04dc4aa39134ebffc5170bb5e3.setContent(html_621a35feba2de6d55aab6e16257598ed);
+                var html_60f93cf5c19b4b4ba3fc75b1a454e443 = $(`<div id="html_60f93cf5c19b4b4ba3fc75b1a454e443" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-24 13:29:38<br>                     <b>Tower ID:</b> CELL-2265<br>                 <b>Called Number:</b> 91754099162<br><b>Call Duration:</b> 390 seconds<br></div></div>`)[0];
+                popup_e91333f444a1f8484ae923e934c9ccab.setContent(html_60f93cf5c19b4b4ba3fc75b1a454e443);
             
         
 
-        marker_343b186acfada95dfd0acd5533053014.bindPopup(popup_4351ba04dc4aa39134ebffc5170bb5e3)
+        marker_6c558238aeca0e0471a592d16046b733.bindPopup(popup_e91333f444a1f8484ae923e934c9ccab)
         ;
 
         
     
     
-            var marker_7f5166bc8d8cf1c44386be7f658cffea = L.marker(
+            marker_6c558238aeca0e0471a592d16046b733.bindTooltip(
+                `<div>
+                     Tower: CELL-2265 - 2025-02-24 13:29:38
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_94354e9c5981a2e163844d4b5de002b1 = L.marker(
                 [33.78578128584478, 93.64754964901412],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_19e4066cf0f2e5fae1ee230d7297bf8a = L.AwesomeMarkers.icon(
+            var icon_76a899ee9fa98296ec6ec81a5c023e43 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_7f5166bc8d8cf1c44386be7f658cffea.setIcon(icon_19e4066cf0f2e5fae1ee230d7297bf8a);
+            marker_94354e9c5981a2e163844d4b5de002b1.setIcon(icon_76a899ee9fa98296ec6ec81a5c023e43);
         
     
-        var popup_6bfef689cc3eb6b04e964fb74db8b60c = L.popup({
-  "maxWidth": "100%",
+        var popup_a550adb6c51c0af15b43e454a98097c0 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_ff4fbbb630506379ecbdd5dc859147fb = $(`<div id="html_ff4fbbb630506379ecbdd5dc859147fb" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-24 15:09:44<br>Tower: CELL-9022</div>`)[0];
-                popup_6bfef689cc3eb6b04e964fb74db8b60c.setContent(html_ff4fbbb630506379ecbdd5dc859147fb);
+                var html_4b3dd0e4c46ff28c0943e779ce650798 = $(`<div id="html_4b3dd0e4c46ff28c0943e779ce650798" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-24 15:09:44<br>                     <b>Tower ID:</b> CELL-9022<br>                 <b>Called Number:</b> 91024561784<br><b>Call Duration:</b> 834 seconds<br></div></div>`)[0];
+                popup_a550adb6c51c0af15b43e454a98097c0.setContent(html_4b3dd0e4c46ff28c0943e779ce650798);
             
         
 
-        marker_7f5166bc8d8cf1c44386be7f658cffea.bindPopup(popup_6bfef689cc3eb6b04e964fb74db8b60c)
+        marker_94354e9c5981a2e163844d4b5de002b1.bindPopup(popup_a550adb6c51c0af15b43e454a98097c0)
         ;
 
         
     
     
-            var marker_5c099645942a5905e00585d0b282119b = L.marker(
+            marker_94354e9c5981a2e163844d4b5de002b1.bindTooltip(
+                `<div>
+                     Tower: CELL-9022 - 2025-02-24 15:09:44
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_877092ec034969c839fb4cd55d5e9610 = L.marker(
                 [33.78578128584478, 93.64754964901412],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_7653a8a49a66b76c66cb901398485ff0 = L.AwesomeMarkers.icon(
+            var icon_ef72f2f7493c89e78f20ffc24db253d0 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_5c099645942a5905e00585d0b282119b.setIcon(icon_7653a8a49a66b76c66cb901398485ff0);
+            marker_877092ec034969c839fb4cd55d5e9610.setIcon(icon_ef72f2f7493c89e78f20ffc24db253d0);
         
     
-        var popup_ecda48923895c6e27e9c7e801628991b = L.popup({
-  "maxWidth": "100%",
+        var popup_c233a81ec33b3a2debce7ef3fa329a39 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_148646f16697973e65d4ac799c05054e = $(`<div id="html_148646f16697973e65d4ac799c05054e" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-25 11:47:18<br>Tower: CELL-9022</div>`)[0];
-                popup_ecda48923895c6e27e9c7e801628991b.setContent(html_148646f16697973e65d4ac799c05054e);
+                var html_0961ae0ef31fbca948a7ed1f6c628daa = $(`<div id="html_0961ae0ef31fbca948a7ed1f6c628daa" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-25 11:47:18<br>                     <b>Tower ID:</b> CELL-9022<br>                 <b>Called Number:</b> 91875529728<br><b>Call Duration:</b> 1136 seconds<br></div></div>`)[0];
+                popup_c233a81ec33b3a2debce7ef3fa329a39.setContent(html_0961ae0ef31fbca948a7ed1f6c628daa);
             
         
 
-        marker_5c099645942a5905e00585d0b282119b.bindPopup(popup_ecda48923895c6e27e9c7e801628991b)
+        marker_877092ec034969c839fb4cd55d5e9610.bindPopup(popup_c233a81ec33b3a2debce7ef3fa329a39)
         ;
 
         
     
     
-            var marker_0fa074eeb0fcbe15ae93dacae07e3870 = L.marker(
+            marker_877092ec034969c839fb4cd55d5e9610.bindTooltip(
+                `<div>
+                     Tower: CELL-9022 - 2025-02-25 11:47:18
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e9ef4a2479d2d57ba3daf17b4b5c88e0 = L.marker(
                 [26.799804401461422, 83.68056747154068],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_bdb6d72571f393722d00063a0f1c36a2 = L.AwesomeMarkers.icon(
+            var icon_cb24fd987cc2e7145c9fda40aff3e684 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_0fa074eeb0fcbe15ae93dacae07e3870.setIcon(icon_bdb6d72571f393722d00063a0f1c36a2);
+            marker_e9ef4a2479d2d57ba3daf17b4b5c88e0.setIcon(icon_cb24fd987cc2e7145c9fda40aff3e684);
         
     
-        var popup_0a905e54b2d560261943928842194860 = L.popup({
-  "maxWidth": "100%",
+        var popup_f9aa2b41b09ce27149fdbb33a437b465 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_6580a53d46a798b883e96ac496e6352d = $(`<div id="html_6580a53d46a798b883e96ac496e6352d" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-25 14:41:02<br>Tower: CELL-5400</div>`)[0];
-                popup_0a905e54b2d560261943928842194860.setContent(html_6580a53d46a798b883e96ac496e6352d);
+                var html_eae5de136de00b611db6b57d420f0b5f = $(`<div id="html_eae5de136de00b611db6b57d420f0b5f" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-25 14:41:02<br>                     <b>Tower ID:</b> CELL-5400<br>                 <b>Called Number:</b> 91024561784<br><b>Call Duration:</b> 24 seconds<br></div></div>`)[0];
+                popup_f9aa2b41b09ce27149fdbb33a437b465.setContent(html_eae5de136de00b611db6b57d420f0b5f);
             
         
 
-        marker_0fa074eeb0fcbe15ae93dacae07e3870.bindPopup(popup_0a905e54b2d560261943928842194860)
+        marker_e9ef4a2479d2d57ba3daf17b4b5c88e0.bindPopup(popup_f9aa2b41b09ce27149fdbb33a437b465)
         ;
 
         
     
     
-            var marker_972c4aecbc5b737ac270235bddb1e357 = L.marker(
+            marker_e9ef4a2479d2d57ba3daf17b4b5c88e0.bindTooltip(
+                `<div>
+                     Tower: CELL-5400 - 2025-02-25 14:41:02
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_13b4bcfbe63189fbd2f509fe1ae5fa34 = L.marker(
                 [20.50869030219981, 77.17694853672141],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_0c776452d1b82bcd330da48ddc42db0e = L.AwesomeMarkers.icon(
+            var icon_6a0d1abd01df59385b0ddafc00111992 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_972c4aecbc5b737ac270235bddb1e357.setIcon(icon_0c776452d1b82bcd330da48ddc42db0e);
+            marker_13b4bcfbe63189fbd2f509fe1ae5fa34.setIcon(icon_6a0d1abd01df59385b0ddafc00111992);
         
     
-        var popup_aaa55c3083debc19771885f27acc20b6 = L.popup({
-  "maxWidth": "100%",
+        var popup_6255cb0060a6067a7b8de1c5b6ac5948 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_c30de9a49b2631514e187e3462cc06f2 = $(`<div id="html_c30de9a49b2631514e187e3462cc06f2" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-25 17:46:57<br>Tower: CELL-1900</div>`)[0];
-                popup_aaa55c3083debc19771885f27acc20b6.setContent(html_c30de9a49b2631514e187e3462cc06f2);
+                var html_de4389a7bbe5966391b24aaba1145e44 = $(`<div id="html_de4389a7bbe5966391b24aaba1145e44" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-25 17:46:57<br>                     <b>Tower ID:</b> CELL-1900<br>                 <b>Called Number:</b> 91097984922<br><b>Call Duration:</b> 306 seconds<br></div></div>`)[0];
+                popup_6255cb0060a6067a7b8de1c5b6ac5948.setContent(html_de4389a7bbe5966391b24aaba1145e44);
             
         
 
-        marker_972c4aecbc5b737ac270235bddb1e357.bindPopup(popup_aaa55c3083debc19771885f27acc20b6)
+        marker_13b4bcfbe63189fbd2f509fe1ae5fa34.bindPopup(popup_6255cb0060a6067a7b8de1c5b6ac5948)
         ;
 
         
     
     
-            var marker_22abc15a0354f60e79332a2eb5934c9a = L.marker(
+            marker_13b4bcfbe63189fbd2f509fe1ae5fa34.bindTooltip(
+                `<div>
+                     Tower: CELL-1900 - 2025-02-25 17:46:57
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7d7df75df3efd2026bebf7b4d7fd104d = L.marker(
                 [33.78578128584478, 93.64754964901412],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_8fd62599f3261daf688340f0b47fcc16 = L.AwesomeMarkers.icon(
+            var icon_42d8c4bd4956e94ebe2f17d179de929c = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_22abc15a0354f60e79332a2eb5934c9a.setIcon(icon_8fd62599f3261daf688340f0b47fcc16);
+            marker_7d7df75df3efd2026bebf7b4d7fd104d.setIcon(icon_42d8c4bd4956e94ebe2f17d179de929c);
         
     
-        var popup_e90bd2a5950f154bce6304ec3c39b0a3 = L.popup({
-  "maxWidth": "100%",
+        var popup_598ad6645403117dd3c2855aa4d15cc7 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_05ef72962ac574e82db26c960dc55c8a = $(`<div id="html_05ef72962ac574e82db26c960dc55c8a" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-25 21:40:38<br>Tower: CELL-9022</div>`)[0];
-                popup_e90bd2a5950f154bce6304ec3c39b0a3.setContent(html_05ef72962ac574e82db26c960dc55c8a);
+                var html_5ce6d7f9dc9c7692feb954b72794a563 = $(`<div id="html_5ce6d7f9dc9c7692feb954b72794a563" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-25 21:40:38<br>                     <b>Tower ID:</b> CELL-9022<br>                 <b>Called Number:</b> 91135015963<br><b>Call Duration:</b> 104 seconds<br></div></div>`)[0];
+                popup_598ad6645403117dd3c2855aa4d15cc7.setContent(html_5ce6d7f9dc9c7692feb954b72794a563);
             
         
 
-        marker_22abc15a0354f60e79332a2eb5934c9a.bindPopup(popup_e90bd2a5950f154bce6304ec3c39b0a3)
+        marker_7d7df75df3efd2026bebf7b4d7fd104d.bindPopup(popup_598ad6645403117dd3c2855aa4d15cc7)
         ;
 
         
     
     
-            var marker_6f0e9c036da4ec5b3eef0bda6664f971 = L.marker(
+            marker_7d7df75df3efd2026bebf7b4d7fd104d.bindTooltip(
+                `<div>
+                     Tower: CELL-9022 - 2025-02-25 21:40:38
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_ef009e37802890fe5653fe11b9fc8d91 = L.marker(
                 [11.239401417172491, 70.32050920652054],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_0f93693c0a3193ba5dbf6a4befbb6a13 = L.AwesomeMarkers.icon(
+            var icon_5c0a7f4fe15da83c514e102494721c5e = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_6f0e9c036da4ec5b3eef0bda6664f971.setIcon(icon_0f93693c0a3193ba5dbf6a4befbb6a13);
+            marker_ef009e37802890fe5653fe11b9fc8d91.setIcon(icon_5c0a7f4fe15da83c514e102494721c5e);
         
     
-        var popup_803ba429ee512d6792ccb6f90d77048b = L.popup({
-  "maxWidth": "100%",
+        var popup_b35b731c20d2cce0ac074450c2fa1830 = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_8738535c8fd58712a4eb1ccd0b19e497 = $(`<div id="html_8738535c8fd58712a4eb1ccd0b19e497" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-26 21:39:10<br>Tower: CELL-5703</div>`)[0];
-                popup_803ba429ee512d6792ccb6f90d77048b.setContent(html_8738535c8fd58712a4eb1ccd0b19e497);
+                var html_45372da52df9c799d77c20eb5216a049 = $(`<div id="html_45372da52df9c799d77c20eb5216a049" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-26 21:39:10<br>                     <b>Tower ID:</b> CELL-5703<br>                 <b>Called Number:</b> 91320272093<br><b>Call Duration:</b> 540 seconds<br></div></div>`)[0];
+                popup_b35b731c20d2cce0ac074450c2fa1830.setContent(html_45372da52df9c799d77c20eb5216a049);
             
         
 
-        marker_6f0e9c036da4ec5b3eef0bda6664f971.bindPopup(popup_803ba429ee512d6792ccb6f90d77048b)
+        marker_ef009e37802890fe5653fe11b9fc8d91.bindPopup(popup_b35b731c20d2cce0ac074450c2fa1830)
         ;
 
         
     
     
-            var marker_65758ad0c095e5e8250af629d3dd4161 = L.marker(
+            marker_ef009e37802890fe5653fe11b9fc8d91.bindTooltip(
+                `<div>
+                     Tower: CELL-5703 - 2025-02-26 21:39:10
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_76bce90261bfbe7d805c8fe5903c68d0 = L.marker(
                 [36.17216892713156, 76.01268455028712],
                 {
 }
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+            ).addTo(marker_cluster_992e1ec704222b9e372ac1debdac7f36);
         
     
-            var icon_ba83dba1b5f6c79d82e921d2d8d70ce7 = L.AwesomeMarkers.icon(
+            var icon_32e97210622154e62454150878a40077 = L.AwesomeMarkers.icon(
                 {
   "markerColor": "blue",
   "iconColor": "white",
-  "icon": "info-sign",
-  "prefix": "glyphicon",
+  "icon": "antenna",
+  "prefix": "fa",
   "extraClasses": "fa-rotate-0",
 }
             );
-            marker_65758ad0c095e5e8250af629d3dd4161.setIcon(icon_ba83dba1b5f6c79d82e921d2d8d70ce7);
+            marker_76bce90261bfbe7d805c8fe5903c68d0.setIcon(icon_32e97210622154e62454150878a40077);
         
     
-        var popup_0bb389041e7efa41cfb47afbf23f0755 = L.popup({
-  "maxWidth": "100%",
+        var popup_54ce9030fab78f80a11f28c068c28dbd = L.popup({
+  "maxWidth": 300,
 });
 
         
             
-                var html_93c53e7f18570a491cb007f424f9a85a = $(`<div id="html_93c53e7f18570a491cb007f424f9a85a" style="width: 100.0%; height: 100.0%;">IMSI: 43648356848709<br>Time: 2025-02-27 06:07:57<br>Tower: CELL-6015</div>`)[0];
-                popup_0bb389041e7efa41cfb47afbf23f0755.setContent(html_93c53e7f18570a491cb007f424f9a85a);
+                var html_8302b6ca3ca47c088f0f219aa729d947 = $(`<div id="html_8302b6ca3ca47c088f0f219aa729d947" style="width: 100.0%; height: 100.0%;">                 <div style="font-family: Arial; width: 250px;">                     <h4>Tower Ping Details</h4>                     <b>IMSI:</b> 43648356848709<br>                     <b>Time:</b> 2025-02-27 06:07:57<br>                     <b>Tower ID:</b> CELL-6015<br>                 <b>Called Number:</b> 91184627400<br><b>Call Duration:</b> 1758 seconds<br></div></div>`)[0];
+                popup_54ce9030fab78f80a11f28c068c28dbd.setContent(html_8302b6ca3ca47c088f0f219aa729d947);
             
         
 
-        marker_65758ad0c095e5e8250af629d3dd4161.bindPopup(popup_0bb389041e7efa41cfb47afbf23f0755)
+        marker_76bce90261bfbe7d805c8fe5903c68d0.bindPopup(popup_54ce9030fab78f80a11f28c068c28dbd)
         ;
 
         
     
     
-            var poly_line_8b1f186f0533ed7f924ba83289dda298 = L.polyline(
+            marker_76bce90261bfbe7d805c8fe5903c68d0.bindTooltip(
+                `<div>
+                     Tower: CELL-6015 - 2025-02-27 06:07:57
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_992e1ec704222b9e372ac1debdac7f36.addTo(map_3ee1bb969529c9e532de2a51c3ed7b7a);
+        
+    
+            var poly_line_0b72dbd380192513c8d9e07be3539ef2 = L.polyline(
                 [[13.714194398369235, 87.75856198371429], [26.746844581251512, 78.51425102910513], [11.239401417172491, 70.32050920652054], [29.94714677780636, 73.4400341530237], [16.932493497559744, 96.47772339864906], [15.482767181773736, 85.9173956882509], [28.546271129852094, 68.49869742372809], [13.715332578543606, 86.66513019888622], [33.78578128584478, 93.64754964901412], [33.78578128584478, 93.64754964901412], [26.799804401461422, 83.68056747154068], [20.50869030219981, 77.17694853672141], [33.78578128584478, 93.64754964901412], [11.239401417172491, 70.32050920652054], [36.17216892713156, 76.01268455028712]],
-                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "red", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 1, "smoothFactor": 1.0, "stroke": true, "weight": 2.5}
-            ).addTo(map_da87f8921983b1f8b69afc5c06df6de5);
+                {"bubblingMouseEvents": true, "color": "red", "dashArray": null, "dashOffset": null, "fill": false, "fillColor": "red", "fillOpacity": 0.2, "fillRule": "evenodd", "lineCap": "round", "lineJoin": "round", "noClip": false, "opacity": 0.7, "smoothFactor": 1.0, "stroke": true, "weight": 3}
+            ).addTo(map_3ee1bb969529c9e532de2a51c3ed7b7a);
+        
+    
+            poly_line_0b72dbd380192513c8d9e07be3539ef2.bindTooltip(
+                `<div>
+                     Movement path of IMSI: 43648356848709
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            L.Control.TimeDimensionCustom = L.Control.TimeDimension.extend({
+                _getDisplayDateFormat: function(date){
+                    var newdate = new moment(date);
+                    console.log(newdate)
+                    return newdate.format("YYYY-MM-DD HH:mm:ss");
+                }
+            });
+            map_3ee1bb969529c9e532de2a51c3ed7b7a.timeDimension = L.timeDimension(
+                {
+                    period: "PT1H",
+                }
+            );
+            var timeDimensionControl = new L.Control.TimeDimensionCustom(
+                {
+  "position": "bottomleft",
+  "minSpeed": 0.1,
+  "maxSpeed": 10,
+  "autoPlay": false,
+  "loopButton": true,
+  "timeSliderDragUpdate": true,
+  "speedSlider": true,
+  "playerOptions": {
+  "transitionTime": 200,
+  "loop": false,
+  "startOver": true,
+},
+}
+            );
+            map_3ee1bb969529c9e532de2a51c3ed7b7a.addControl(this.timeDimensionControl);
+
+            var geoJsonLayer = L.geoJson({"type": "FeatureCollection", "features": [{"type": "Feature", "geometry": {"type": "Point", "coordinates": [87.75856198371429, 13.714194398369235]}, "properties": {"time": "2025-02-21 01:03:35", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-21 01:03:35<br>Tower: CELL-8443"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [78.51425102910513, 26.746844581251512]}, "properties": {"time": "2025-02-21 02:03:40", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-21 02:03:40<br>Tower: CELL-0910"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [70.32050920652054, 11.239401417172491]}, "properties": {"time": "2025-02-21 02:08:46", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-21 02:08:46<br>Tower: CELL-5703"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [73.4400341530237, 29.94714677780636]}, "properties": {"time": "2025-02-21 08:44:51", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-21 08:44:51<br>Tower: CELL-9505"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [96.47772339864906, 16.932493497559744]}, "properties": {"time": "2025-02-22 02:10:53", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-22 02:10:53<br>Tower: CELL-8473"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [85.9173956882509, 15.482767181773736]}, "properties": {"time": "2025-02-22 06:33:26", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-22 06:33:26<br>Tower: CELL-8476"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [68.49869742372809, 28.546271129852094]}, "properties": {"time": "2025-02-23 11:10:49", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-23 11:10:49<br>Tower: CELL-7820"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [86.66513019888622, 13.715332578543606]}, "properties": {"time": "2025-02-24 13:29:38", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-24 13:29:38<br>Tower: CELL-2265"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [93.64754964901412, 33.78578128584478]}, "properties": {"time": "2025-02-24 15:09:44", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-24 15:09:44<br>Tower: CELL-9022"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [93.64754964901412, 33.78578128584478]}, "properties": {"time": "2025-02-25 11:47:18", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-25 11:47:18<br>Tower: CELL-9022"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [83.68056747154068, 26.799804401461422]}, "properties": {"time": "2025-02-25 14:41:02", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-25 14:41:02<br>Tower: CELL-5400"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [77.17694853672141, 20.50869030219981]}, "properties": {"time": "2025-02-25 17:46:57", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-25 17:46:57<br>Tower: CELL-1900"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [93.64754964901412, 33.78578128584478]}, "properties": {"time": "2025-02-25 21:40:38", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-25 21:40:38<br>Tower: CELL-9022"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [70.32050920652054, 11.239401417172491]}, "properties": {"time": "2025-02-26 21:39:10", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-26 21:39:10<br>Tower: CELL-5703"}}, {"type": "Feature", "geometry": {"type": "Point", "coordinates": [76.01268455028712, 36.17216892713156]}, "properties": {"time": "2025-02-27 06:07:57", "icon": "circle", "iconstyle": {"fillColor": "red", "fillOpacity": 0.8, "stroke": "true", "radius": 7}, "popup": "IMSI: 43648356848709<br>Time: 2025-02-27 06:07:57<br>Tower: CELL-6015"}}]}, {
+                    pointToLayer: function (feature, latLng) {
+                        if (feature.properties.icon == 'marker') {
+                            if(feature.properties.iconstyle){
+                                return new L.Marker(latLng, {
+                                    icon: L.icon(feature.properties.iconstyle)});
+                            }
+                            //else
+                            return new L.Marker(latLng);
+                        }
+                        if (feature.properties.icon == 'circle') {
+                            if (feature.properties.iconstyle) {
+                                return new L.circleMarker(latLng, feature.properties.iconstyle)
+                                };
+                            //else
+                            return new L.circleMarker(latLng);
+                        }
+                        //else
+
+                        return new L.Marker(latLng);
+                    },
+                    style: function (feature) {
+                        return feature.properties.style;
+                    },
+                    onEachFeature: function(feature, layer) {
+                        if (feature.properties.popup) {
+                        layer.bindPopup(feature.properties.popup);
+                        }
+                        if (feature.properties.tooltip) {
+                        layer.bindTooltip(feature.properties.tooltip);
+                        }
+                    }
+                })
+
+            var timestamped_geo_json_b722148ba95b8b7e548fd237a956167c = L.timeDimension.layer.geoJson(
+                geoJsonLayer,
+                {
+                    updateTimeDimension: true,
+                    addlastPoint: true,
+                    duration: "PT1M",
+                }
+            ).addTo(map_3ee1bb969529c9e532de2a51c3ed7b7a);
         
 </script>
 </html>
