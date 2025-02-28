@@ -6,6 +6,7 @@ scipy==1.10.1
 # Network analysis
 pyshark==0.6.0
 scapy==2.5.0
+networkx==2.7.1
 
 # Geospatial processing
 folium==0.14.0

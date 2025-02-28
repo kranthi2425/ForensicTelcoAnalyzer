@@ -8,9 +8,13 @@ import plotly.express as px
 import plotly.graph_objects as go
 from datetime import datetime
 import base64
+import logging
+
+# Configure logging
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize the Dash app
-app = dash.Dash(__name__)
+app = dash.Dash(__name__, suppress_callback_exceptions=True)
 app.title = 'Forensic Telecommunications Analysis Dashboard'
 
 # Define the layout of the dashboard
@@ -81,6 +85,33 @@ app.layout = html.Div([
                 ], style={'width': '50%', 'margin': '0 auto', 'marginBottom': 20}),
                 html.Div(id='timeline-content')
             ])
+        ]),
+
+        # OSINT Results Tab
+        dcc.Tab(label='OSINT Results', children=[
+            html.Div([
+                html.H3('Phone Number Intelligence', style={'textAlign': 'center'}),
+                html.Div(id='osint-content')
+            ])
+        ]),
+
+        # Network Analysis Tab
+        dcc.Tab(label='Network Analysis', children=[
+            html.Div([
+                html.H3('Network Analysis', style={'textAlign': 'center'}),
+                html.Div([
+                    html.Label('Select Parent Option:'),
+                    dcc.Dropdown(
+                        id='parent-dropdown',
+                        options=[
+                            {'label': 'Parent Option 1', 'value': 'parent_1'},
+                            {'label': 'Parent Option 2', 'value': 'parent_2'}
+                        ],
+                        value=None
+                    ),
+                ], style={'width': '50%', 'margin': '0 auto', 'marginBottom': 20}),
+                html.Div(id='dynamic-content')  # Placeholder for dynamically generated content
+            ])
         ])
     ], style={'marginTop': 20})
 ], style={'padding': 20, 'fontFamily': 'Arial'})
@@ -102,17 +133,23 @@ def update_cdr_content(_):
         try:
             frequent_contacts = pd.read_csv(frequent_contacts_file)
             if not frequent_contacts.empty:
-                fig = px.bar(
-                    frequent_contacts, 
-                    x=frequent_contacts.index, 
-                    y=frequent_contacts.values,
-                    labels={'x': 'Phone Number', 'y': 'Number of Calls'},
-                    title='Frequent Contacts Analysis'
-                )
-                content.append(dcc.Graph(figure=fig))
+                # Ensure the data has valid lengths for plotting
+                if len(frequent_contacts.columns) >= 2:
+                    fig = px.bar(
+                        x=frequent_contacts.iloc[:, 0],  # First column (e.g., phone numbers)
+                        y=frequent_contacts.iloc[:, 1],  # Second column (e.g., call counts)
+                        labels={'x': 'Phone Number', 'y': 'Number of Calls'},
+                        title='Frequent Contacts Analysis'
+                    )
+                    content.append(dcc.Graph(figure=fig))
+                else:
+                    content.append(html.Div("Frequent contacts data is incomplete.", style={'color': 'red'}))
+            else:
+                content.append(html.Div("No frequent contacts data available.", style={'textAlign': 'center'}))
         except Exception as e:
-            content.append(html.Div(f"Error loading frequent contacts: {str(e)}"))
-    
+            logging.error(f"Error loading frequent contacts: {str(e)}", exc_info=True)
+            content.append(html.Div(f"Error loading frequent contacts: {str(e)}", style={'color': 'red'}))
+
     # Load and display unusual calls
     if os.path.exists(unusual_calls_file):
         try:
@@ -131,13 +168,16 @@ def update_cdr_content(_):
                         }
                     )
                 ]))
+            else:
+                content.append(html.Div("No unusual call patterns found.", style={'textAlign': 'center'}))
         except Exception as e:
-            content.append(html.Div(f"Error loading unusual calls: {str(e)}"))
-    
+            logging.error(f"Error loading unusual calls: {str(e)}", exc_info=True)
+            content.append(html.Div(f"Error loading unusual calls: {str(e)}", style={'color': 'red'}))
+
     # If no data is available
     if not content:
-        return html.Div('No CDR analysis data available', style={'textAlign': 'center'})
-    
+        return html.Div('No CDR analysis data available.', style={'textAlign': 'center'})
+
     return html.Div(content)
 
 # Callback for IPDR content
@@ -286,15 +326,15 @@ def update_tdr_content(_):
     [Input('map-dropdown', 'id')]
 )
 def update_map_dropdown(_):
-    map_files = []
     processed_dir = os.path.join('data', 'processed')
-    
     if os.path.exists(processed_dir):
-        for file in os.listdir(processed_dir):
-            if file.endswith('.html'):
-                map_files.append({'label': file, 'value': os.path.join(processed_dir, file)})
+        map_files = [
+            {'label': file, 'value': os.path.join(processed_dir, file)}
+            for file in os.listdir(processed_dir) if file.endswith('.html')
+        ]
+        return map_files
     
-    return map_files
+    return []
 
 # Callback to display selected map
 @app.callback(
@@ -303,18 +343,20 @@ def update_map_dropdown(_):
 )
 def update_map_content(selected_map):
     if not selected_map:
-        return html.Div('Please select a map to display', style={'textAlign': 'center'})
+        # If no map is selected, display a message
+        return html.Div('Please select a map to display.', style={'textAlign': 'center', 'marginTop': '20px'})
     
     try:
-        # Create an iframe to display the HTML map
+        # Dynamically create an iframe to display the selected HTML map
         return html.Div([
             html.Iframe(
-                src=selected_map,
+                srcDoc=open(selected_map, 'r').read(),  # Dynamically load the HTML content
                 style={'width': '100%', 'height': '600px', 'border': 'none'}
             )
         ])
     except Exception as e:
-        return html.Div(f"Error loading map: {str(e)}")
+        # Handle errors gracefully and display an error message
+        return html.Div(f"Error loading map: {str(e)}", style={'textAlign': 'center', 'color': 'red'})
 
 # Callback for Correlation content
 @app.callback(
@@ -430,6 +472,71 @@ def update_timeline(selected_phone):
         return html.Iframe(src=timeline_file, style={'width': '100%', 'height': '600px'})
     
     return html.Div(f"No timeline available for {selected_phone}.", style={'textAlign': 'center'})
+
+# Callback for OSINT content
+@app.callback(
+    Output('osint-content', 'children'),
+    [Input('osint-content', 'id')]
+)
+def update_osint_content(_):
+    osint_file = os.path.join('data', 'processed', 'osint_results.csv')
+    
+    if os.path.exists(osint_file):
+        try:
+            osint_data = pd.read_csv(osint_file)
+            
+            return html.Div([
+                dash.dash_table.DataTable(
+                    data=osint_data.to_dict('records'),
+                    columns=[{'name': i, 'id': i} for i in osint_data.columns],
+                    style_table={'overflowX': 'auto'},
+                    style_cell={'textAlign': 'left'},
+                    style_header={
+                        'backgroundColor': 'rgb(230, 230, 230)',
+                        'fontWeight': 'bold'
+                    }
+                )
+            ])
+        
+        except Exception as e:
+            return html.Div(f"Error loading OSINT results: {str(e)}", style={'color': 'red'})
+    
+    return html.Div("No OSINT results available.", style={'textAlign': 'center'})
+
+# Callback to populate network dropdown based on parent dropdown selection
+@app.callback(
+    Output('dynamic-content', 'children'),
+    [Input('parent-dropdown', 'value')]
+)
+def update_dynamic_content(selected_value):
+    if selected_value:
+        return html.Div([
+            html.Label('Select Network Option:'),
+            dcc.Dropdown(
+                id='network-dropdown',
+                options=[{'label': f'Option {i}', 'value': f'option_{i}'} for i in range(1, 6)],
+                value=None
+            ),
+            html.Div(id='network-content')
+        ])
+    return html.Div('Please select a parent option.', style={'textAlign': 'center'})
+
+def generate_network_dropdown(selected_value):
+    if selected_value:
+        return dcc.Dropdown(id='network-dropdown', options=[
+            {'label': f'Network {i}', 'value': f'network_{i}'} for i in range(1, 6)
+        ])
+    return "Please select a parent option."
+
+# Callback to update network content based on network dropdown selection
+@app.callback(
+    Output('network-content', 'children'),
+    [Input('network-dropdown', 'value')]
+)
+def update_network_content(selected_option):
+    if selected_option:
+        return html.Div(f'Selected Network Option: {selected_option}', style={'textAlign': 'center'})
+    return html.Div('Please select a network option.', style={'textAlign': 'center'})
 
 # Run the app
 if __name__ == '__main__':
