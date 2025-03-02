@@ -1,21 +1,137 @@
 # forensic_telco_analyzer/dashboard/app.py
 import dash
-from dash import dcc, html
+from dash import dcc
+from dash import html
 from dash.dependencies import Input, Output
 import pandas as pd
 import os
 import plotly.express as px
 import plotly.graph_objects as go
+from plotly.graph_objs import Scatter, Figure, Layout
 from datetime import datetime
 import base64
 import logging
+import flask
+import networkx as nx
+import matplotlib.pyplot as plt
+import matplotlib
+matplotlib.use('Agg')  # Use the non-GUI Agg backend
+import time
+
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Initialize the Dash app
-app = dash.Dash(__name__, suppress_callback_exceptions=True)
+app = dash.Dash(__name__, suppress_callback_exceptions=True, assets_folder='assets') # Initialize the Dash app with static and assets folders
+server = app.server
 app.title = 'Forensic Telecommunications Analysis Dashboard'
+
+# Define the NetworkAnalyzer class
+class NetworkAnalyzer:
+    def __init__(self, correlated_file):
+        """
+        Initialize the NetworkAnalyzer with the path to the correlated data file.
+        Args:
+            correlated_file (str): Path to the correlated data CSV file.
+        """
+        if not correlated_file or not os.path.exists(correlated_file):
+            raise FileNotFoundError(f"File not found: {correlated_file}")
+        
+        logging.info(f"Loading correlated data from {correlated_file}...")
+        self.data = pd.read_csv(correlated_file)
+        self.graph = nx.Graph()
+
+    def build_graph(self):
+        """Build a graph from CDR data."""
+        logging.info("Building communication network graph...")
+        for _, row in self.data.iterrows():
+            src = row['source_number']
+            dst = row['destination_number']
+            if not self.graph.has_edge(src, dst):
+                self.graph.add_edge(src, dst, weight=1)
+            else:
+                self.graph[src][dst]['weight'] += 1
+        logging.info(f"Graph built with {self.graph.number_of_nodes()} nodes and {self.graph.number_of_edges()} edges.")
+
+    def calculate_centrality(self):
+        """Calculate centrality measures."""
+        logging.info("Calculating centrality measures...")
+        degree_centrality = nx.degree_centrality(self.graph)
+        betweenness_centrality = nx.betweenness_centrality(self.graph)
+        pagerank = nx.pagerank(self.graph)
+        
+        centrality_df = pd.DataFrame({
+            'Node': list(degree_centrality.keys()),
+            'Degree Centrality': list(degree_centrality.values()),
+            'Betweenness Centrality': list(betweenness_centrality.values()),
+            'PageRank': list(pagerank.values())
+        }).sort_values(by='PageRank', ascending=False)
+        
+        logging.info("Centrality measures calculated.")
+        return centrality_df
+
+    def visualize_graph(self, output_file=None):
+        """Visualize the communication network graph."""
+        logging.info("Visualizing the graph...")
+        pos = nx.spring_layout(self.graph, seed=42)
+        
+        # Draw the graph using Matplotlib
+        plt.figure(figsize=(12, 12))
+        nx.draw(
+            self.graph,
+            pos,
+            with_labels=True,
+            node_size=50,
+            font_size=8,
+            edge_color='gray',
+            node_color='skyblue',
+            alpha=0.7
+        )
+        
+        if output_file:
+            plt.savefig(output_file)
+            logging.info(f"Graph visualization saved to {output_file}.")
+        
+        plt.close()  # Close figure to free memory
+
+def analyze_correlated_network(correlated_file):
+    """Perform network analysis on correlated data."""
+    logging.info("Performing network analysis...")
+    
+    # Load correlated data
+    data = pd.read_csv(correlated_file)
+    
+    # Initialize NetworkAnalyzer
+    analyzer = NetworkAnalyzer(correlated_file)
+    
+    # Build graph and calculate centrality measures
+    analyzer.build_graph()
+    centrality_df = analyzer.calculate_centrality()
+    
+    # Save centrality measures
+    os.makedirs("data/processed", exist_ok=True)
+    centrality_df.to_csv("data/processed/centrality_measures.csv", index=False)
+    
+    # Visualize graph
+    static_dir = os.path.join(os.getcwd(), 'static')
+    if not os.path.exists(static_dir):
+        os.makedirs(static_dir)
+    graph_output_path = os.path.join(static_dir, 'network_graph.png')
+    analyzer.visualize_graph(output_file=graph_output_path)
+
+app.layout = html.Div([
+    html.H1("Network Analysis"),
+    dcc.Dropdown(
+        id='network-dropdown',
+        options=[
+            {'label': 'Option 1', 'value': 'value1'},
+            {'label': 'Option 2', 'value': 'value2'}
+        ],
+        placeholder="Select an option"
+    ),
+    html.Div(id='network-analysis-output')  # Output container
+])
 
 # Define the layout of the dashboard
 app.layout = html.Div([
@@ -74,13 +190,13 @@ app.layout = html.Div([
         # Timeline Visualization Tab
         dcc.Tab(label='Timeline Visualization', children=[
             html.Div([
-                html.H3('Timeline of Correlated Events', style={'textAlign': 'center'}),
+                html.H3('Event Timeline', style={'textAlign': 'center'}),
                 html.Div([
                     html.Label('Select Phone Number:'),
                     dcc.Dropdown(
                         id='timeline-dropdown',
-                        options=[],
-                        value=None
+                        options=[], # Dynamically populated
+                        placeholder='Select a phone number'
                     ),
                 ], style={'width': '50%', 'margin': '0 auto', 'marginBottom': 20}),
                 html.Div(id='timeline-content')
@@ -112,9 +228,74 @@ app.layout = html.Div([
                 ], style={'width': '50%', 'margin': '0 auto', 'marginBottom': 20}),
                 html.Div(id='dynamic-content')  # Placeholder for dynamically generated content
             ])
-        ])
+        ]),
+
+        # Reports Tab
+        dcc.Tab(label='Reports', children=[
+            html.Div([
+                html.H3('Generated Reports', style={'textAlign': 'center'}),
+                html.A('Download Report', href='/download/report', target='_blank')
+            ])
+        ]),
+        
+        # Network Visualization Tab
+        dcc.Tab(label='Network Visualization', children=[
+            html.Div([
+                html.H3('Communication Network Analysis', style={'textAlign': 'center'}),
+                html.Div([
+                    html.Label('Select Correlation File:'),
+                    dcc.Dropdown(
+                        id='network-dropdown',
+                        options=[
+                            {'label': 'OSINT-CDR Correlation', 'value': 'data/processed/correlated_osint_cdr.csv'},
+                            {'label': 'All Correlations', 'value': 'data/processed/all_correlation.csv'}
+                         ],
+                        value=None,
+                        placeholder='Select a correlation file'
+                    )
+                ], style={'width': '50%', 'margin': '0 auto', 'marginBottom': 20}),
+                html.Div(id='network-graph-content')
+            ])
+        ]),
+
     ], style={'marginTop': 20})
 ], style={'padding': 20, 'fontFamily': 'Arial'})
+
+# Route to serve the generated PDF report
+@app.server.route('/download/report')
+def download_report():
+    report_path = os.path.join('data', 'processed', 'analysis_report.pdf')
+    if os.path.exists(report_path):
+        return flask.send_from_directory(directory='data/processed', filename='analysis_report.pdf', as_attachment=True)
+    else:
+        return "Report not found.", 404
+
+# Callback to populate network dropdown based on parent dropdown selection
+@app.callback(
+    Output('dynamic-content', 'children'),
+    [Input('parent-dropdown', 'value')]
+)
+def generate_network_dropdown(selected_value):
+    if selected_value:
+        return html.Div([
+            dcc.Dropdown(
+                id='network-dropdown',
+                options=[{'label': f'Network {i}', 'value': f'network_{i}'} for i in range(1, 6)],
+                value=None
+            ),
+            html.Div(id='network-content')
+        ])
+    return "Please select a parent option."
+
+# Callback to update network content based on network dropdown selection
+@app.callback(
+    Output('network-content', 'children'),
+    [Input('network-dropdown', 'value')]
+)
+def update_network_content(selected_option):
+    if selected_option:
+        return html.Div(f'Selected Network Option: {selected_option}', style={'textAlign': 'center'})
+    return html.Div('Please select a network option.', style={'textAlign': 'center'})
 
 # Callback for CDR content
 @app.callback(
@@ -338,8 +519,9 @@ def update_map_dropdown(_):
 
 # Callback to display selected map
 @app.callback(
-    Output('map-content', 'children'),
-    [Input('map-dropdown', 'value')]
+    Output('map-content', 'children', allow_duplicate=True),
+    [Input('map-dropdown', 'value')],
+    prevent_initial_call=True
 )
 def update_map_content(selected_map):
     if not selected_map:
@@ -361,7 +543,8 @@ def update_map_content(selected_map):
 # Callback for Correlation content
 @app.callback(
     Output('correlation-content', 'children'),
-    [Input('correlation-content', 'id')]
+    [Input('correlation-content', 'id')],
+    
 )
 def update_correlation_content(_):
     # Check for correlation result files
@@ -440,24 +623,40 @@ def update_correlation_content(_):
 
     return html.Div(content)
 
-# Callback to populate timeline dropdown
+# Callback for OSINT content
 @app.callback(
-    Output('timeline-dropdown', 'options'),
-    [Input('timeline-dropdown', 'id')]
+    Output('osint-content', 'children'),
+    [Input('osint-content', 'id')]
 )
-def update_timeline_dropdown(_):
-    timeline_files = []
-    processed_dir = os.path.join('data', 'processed')
+def update_osint_content(_):
+    osint_file = os.path.join('data', 'processed', 'osint_results.csv')
+    print(f"OSINT file path: {osint_file}")  # Debug print statement
     
-    if os.path.exists(processed_dir):
-        for file in os.listdir(processed_dir):
-            if file.startswith('timeline_') and file.endswith('.html'):
-                phone_number = file[len('timeline_'):-len('.html')]
-                timeline_files.append({'label': phone_number, 'value': phone_number})
-    
-    return timeline_files
+    if os.path.exists(osint_file):
+        try:
+            osint_data = pd.read_csv(osint_file)
+            if not osint_data.empty:
+                return html.Div([
+                    dash.dash_table.DataTable(
+                        data=osint_data.to_dict('records'),
+                        columns=[{'name': i, 'id': i} for i in osint_data.columns],
+                        style_table={'overflowX': 'auto'},
+                        style_cell={'textAlign': 'left'},
+                        style_header={
+                            'backgroundColor': 'rgb(230, 230, 230)',
+                            'fontWeight': 'bold'
+                        }
+                    )
+                ])
+            else:
+                return html.Div("No OSINT data available.", style={'textAlign': 'center'})
+        except Exception as e:
+            logging.error(f"Error loading OSINT data: {str(e)}", exc_info=True)
+            return html.Div(f"Error loading OSINT data: {str(e)}", style={'color': 'red'})
+    else:
+        return html.Div("No OSINT data available.", style={'textAlign': 'center'})
 
-# Callback to display selected timeline
+
 @app.callback(
     Output('timeline-content', 'children'),
     [Input('timeline-dropdown', 'value')]
@@ -466,78 +665,156 @@ def update_timeline(selected_phone):
     if not selected_phone:
         return html.Div('Please select a phone number to view its timeline.', style={'textAlign': 'center'})
 
-    timeline_file = os.path.join('data', 'processed', f'timeline_{selected_phone}.html')
-
-    if os.path.exists(timeline_file):
-        return html.Iframe(src=timeline_file, style={'width': '100%', 'height': '600px'})
-    
-    return html.Div(f"No timeline available for {selected_phone}.", style={'textAlign': 'center'})
-
-# Callback for OSINT content
-@app.callback(
-    Output('osint-content', 'children'),
-    [Input('osint-content', 'id')]
-)
-def update_osint_content(_):
-    osint_file = os.path.join('data', 'processed', 'osint_results.csv')
-    
-    if os.path.exists(osint_file):
-        try:
-            osint_data = pd.read_csv(osint_file)
-            
-            return html.Div([
-                dash.dash_table.DataTable(
-                    data=osint_data.to_dict('records'),
-                    columns=[{'name': i, 'id': i} for i in osint_data.columns],
-                    style_table={'overflowX': 'auto'},
-                    style_cell={'textAlign': 'left'},
-                    style_header={
-                        'backgroundColor': 'rgb(230, 230, 230)',
-                        'fontWeight': 'bold'
-                    }
-                )
-            ])
+    try:
+        correlated_file = os.path.join('data', 'processed', 'correlated_osint_cdr.csv')
         
-        except Exception as e:
-            return html.Div(f"Error loading OSINT results: {str(e)}", style={'color': 'red'})
-    
-    return html.Div("No OSINT results available.", style={'textAlign': 'center'})
+        if os.path.exists(correlated_file):
+            data = pd.read_csv(correlated_file)
+            
+            # Filter events for the selected phone number
+            events = data[data['source_number'] == selected_phone]
 
-# Callback to populate network dropdown based on parent dropdown selection
+            fig = px.timeline(
+                events,
+                x_start="timestamp",
+                x_end="timestamp",
+                y="destination_number",
+                title=f"Timeline of Events for {selected_phone}",
+                labels={"destination_number": "Contact", "timestamp": "Time"}
+            )
+
+            fig.update_layout(height=600)
+
+            return dcc.Graph(figure=fig)
+
+    except Exception as e:
+        return html.Div(f"Error generating timeline: {str(e)}", style={'color': 'red', 'textAlign': 'center'})
+
+
+# Callback to populate network dropdown   
 @app.callback(
-    Output('dynamic-content', 'children'),
-    [Input('parent-dropdown', 'value')]
+    Output('timeline-dropdown', 'options'),
+    [Input('timeline-dropdown', 'id')]
 )
-def update_dynamic_content(selected_value):
-    if selected_value:
-        return html.Div([
-            html.Label('Select Network Option:'),
-            dcc.Dropdown(
-                id='network-dropdown',
-                options=[{'label': f'Option {i}', 'value': f'option_{i}'} for i in range(1, 6)],
-                value=None
-            ),
-            html.Div(id='network-content')
-        ])
-    return html.Div('Please select a parent option.', style={'textAlign': 'center'})
+def populate_phone_numbers(_):
+    cdr_file = os.path.join('data', 'processed', 'correlated_osint_cdr.csv')
+    if os.path.exists(cdr_file):
+        try:
+            cdr_data = pd.read_csv(cdr_file)
+            unique_numbers = cdr_data['source_number'].unique()
+            return [{'label': number, 'value': number} for number in unique_numbers]
+        except Exception as e:
+            print(f"Error loading phone numbers: {str(e)}")
+    return []
 
-def generate_network_dropdown(selected_value):
-    if selected_value:
-        return dcc.Dropdown(id='network-dropdown', options=[
-            {'label': f'Network {i}', 'value': f'network_{i}'} for i in range(1, 6)
-        ])
-    return "Please select a parent option."
-
-# Callback to update network content based on network dropdown selection
+    
+# Callback for Network Graph content
 @app.callback(
-    Output('network-content', 'children'),
+    Output('network-graph-content', 'children'),
     [Input('network-dropdown', 'value')]
 )
-def update_network_content(selected_option):
-    if selected_option:
-        return html.Div(f'Selected Network Option: {selected_option}', style={'textAlign': 'center'})
-    return html.Div('Please select a network option.', style={'textAlign': 'center'})
+def update_network_graph(selected_file):
+    if not selected_file:
+        return html.Div('Please select a file to display.', style={'textAlign': 'center'})
 
-# Run the app
+    try:
+        # Perform network analysis
+        analyzer = NetworkAnalyzer(selected_file)
+        analyzer.build_graph()
+        centrality_df = analyzer.calculate_centrality()
+        
+        # Save centrality data for download
+        centrality_path = os.path.join('data', 'processed', 'centrality_measures.csv')
+        centrality_df.to_csv(centrality_path, index=False)
+
+        # Visualize the graph
+        graph_output = os.path.join('static', 'network_graph.png')
+        analyzer.visualize_graph(output_file=graph_output) # Save the graph as a static image
+
+        # Create dashboard content
+        content = [
+            html.H4("Centrality Measures"),
+            dash.dash_table.DataTable(
+                data=centrality_df.to_dict('records'),
+                columns=[{'name': i, 'id': i} for i in centrality_df.columns],
+                style_table={'overflowX': 'auto'},
+                style_cell={'textAlign': 'left'},
+                style_header={
+                    'backgroundColor': 'rgb(230, 230, 230)',
+                    'fontWeight': 'bold'
+                }
+            ),
+            html.H4("Network Graph"),
+            html.Img(src=f"/static/network_graph.png?t={time.time()}", style={'width': '100%', 'height': 'auto'})  # URL path with cache busting
+        ]
+        return html.Div(content)
+
+    except Exception as e:
+        return html.Div(f"Error generating network graph: {str(e)}", style={'color': 'red', 'textAlign': 'center'})
+    
+# Serve static files (e.g., images)
+@app.server.route('/assets/<path:path>')
+def serve_static(path):
+    return flask.send_from_directory('data/processed', path)
+
+@app.server.route('/static/<path:filename>')
+def serve_static_file(filename):
+    static_dir = os.path.join(os.getcwd(), 'static')
+    return flask.send_from_directory(static_dir,'network_graph.png' )
+
+# After analysis, save the graph
+graph_filename = "network_graph.png"
+static_dir = 'static'  # Define the static directory
+graph_path = os.path.join(static_dir, 'network_graph.png')  # Full path
+
+# Ensure the static directory exists
+static_dir = os.path.join(os.getcwd(), 'static')
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir, exist_ok=True)
+    
+# Determine the full path to your "static" directory.
+STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+    
+# Determine the full path to your "static" directory.
+STATIC_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'static')
+
+# Save the network graph image to the "static" folder.
+graph_output_path = os.path.join(static_dir, 'network_graph.png')
+# analyzer.visualize_graph(graph_output_path)
+  
+import os
+import matplotlib.pyplot as plt
+import networkx as nx
+
+def visualize_graph(graph, output_file):
+    """Save network graph as an image."""
+    plt.figure(figsize=(10, 8))
+    nx.draw(
+        graph,
+        with_labels=True,
+        node_size=500,
+        node_color='skyblue',
+        edge_color='gray'
+    )
+    plt.savefig('network_graph.png')  # Save to static folder
+    plt.close()  # Close figure to free memory
+
+# Ensure the static directory exists
+static_dir = os.path.join(os.getcwd(), 'static')
+if not os.path.exists(static_dir):
+    os.makedirs(static_dir)
+
+@app.callback(
+    Output('network-analysis-output', 'children'),
+    [Input('network-dropdown', 'value')]
+)
+def update_network_analysis(selected_value):
+    if not selected_value:
+        return "Please select a value from the dropdown."
+    
+    # Perform analysis based on selected value
+    analysis_results = f"Results for {selected_value}"  # Replace with actual logic
+    return html.Div(analysis_results)
+
 if __name__ == '__main__':
     app.run_server(debug=True)

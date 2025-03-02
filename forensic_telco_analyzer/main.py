@@ -4,6 +4,24 @@ import sys
 import pandas as pd
 import matplotlib.pyplot as plt
 import logging
+import seaborn as sns
+import plotly.express as px
+import plotly.graph_objects as go
+import plotly.io as pio
+from plotly.subplots import make_subplots
+from dotenv import load_dotenv
+import logging
+from datetime import datetime
+from fpdf import FPDF
+
+logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+
+
+# Load environment variables from .env file
+load_dotenv()
+
+# Access the API key
+api_key = os.getenv('NUMVERIFY_API_KEY')
 
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
@@ -21,9 +39,21 @@ from forensic_telco_analyzer.ipdr.voip_extractor import VoIPExtractor
 from forensic_telco_analyzer.tdr.parser import TDRParser
 from forensic_telco_analyzer.tdr.analyzer import TDRAnalyzer
 from forensic_telco_analyzer.tdr.geo_mapper import GeoMapper
-from forensic_telco_analyzer.dashboard.app import app
 from forensic_telco_analyzer.correlation.engine import CorrelationEngine
 from forensic_telco_analyzer.osint.phone_lookup import PhoneLookup
+from forensic_telco_analyzer.analysis.network_analysis import NetworkAnalyzer
+from forensic_telco_analyzer.dashboard.app import app
+from forensic_telco_analyzer.dashboard.app import analyze_correlated_network
+from forensic_telco_analyzer.dashboard.app import serve_static_content
+from forensic_telco_analyzer.dashboard.app import generate_network_dropdown_options
+from forensic_telco_analyzer.dashboard.app import update_network_content
+from forensic_telco_analyzer.dashboard.app import update_ipdr_content
+from forensic_telco_analyzer.dashboard.app import update_tdr_content
+from forensic_telco_analyzer.dashboard.app import update_cdr_content
+from forensic_telco_analyzer.dashboard.app import update_correlation_content
+from forensic_telco_analyzer.dashboard.app import update_osint_content
+from forensic_telco_analyzer.dashboard.app import update_network_graph
+from forensic_telco_analyzer.dashboard.app import update_ipdr_graph
 
 def main():
     parser = argparse.ArgumentParser(description='Forensic Telecommunications Analysis Tool')
@@ -36,6 +66,11 @@ def main():
     parser.add_argument('--correlate', action='store_true', help='Perform cross-data correlation between CDR, IPDR, and TDR')
     parser.add_argument('--osint', help='Perform OSINT lookups using the provided API key')
     parser.add_argument('--osint-api-key', help='API key for phone number intelligence lookup')
+    parser.add_argument('--correlate-osint', action='store_true', help='Correlate OSINT results with CDR data')
+    parser.add_argument('--network-analysis', action='store_true', help='Perform network analysis')
+    parser.add_argument('--visualize', action='store_true', help='Visualize results')
+    parser.add_argument('--debug', action='store_true', help='Enable debug logging')
+    parser.add_argument('--log-file', help='Path to log file')
 
     args = parser.parse_args()
     
@@ -54,14 +89,44 @@ def main():
     # Process TDR file if provided
     if args.tdr:
         process_tdr(args.tdr, args.tower_locations, args.output)
+    
+    # Perform network analysis if specified
+    correlated_file = os.path.join(args.output, "correlated_data.csv")
+    
+    if args.network_analysis:
+        process_network_analysis(correlated_file, args.output)
+        generate_pdf_report(args.output)
+
 
     # Perform cross-data correlation if specified
     if args.correlate:
         process_correlation(args.cdr, args.ipdr, args.tdr, args.output)
 
+    # Check for OSINT API key
+    if not args.osint_api_key:
+        args.osint_api_key = os.environ.get("NUMVERIFY_API_KEY")
+        if not args.osint_api_key:
+            raise ValueError("No OSINT API key provided. Use --osint-api-key or set NUMVERIFY_API_KEY.")
+    
     # Perform OSINT lookups if specified
-    if args.osint and args.osint_api_key:
+    if args.osint_api_key:
         process_osint(args.cdr, args.osint_api_key, args.output)
+    
+    # Correlate OSINT results with CDR data if both are provided    
+    if args.osint_api_key and args.cdr:
+        process_osint_correlation(
+            osint_file=os.path.join(args.output, "osint_results.csv"),
+            cdr_file=args.cdr,
+            output_dir=args.output
+        )
+        
+        correlated_file = os.path.join(args.output, "correlated_osint_cdr.csv")
+        
+        # Ensure correlation data exists before proceeding with network analysis
+        if os.path.exists(correlated_file):
+            process_network_analysis(correlated_file, args.output)
+        else:
+            print(f"Correlation file not found: {correlated_file}")
 
     # Launch dashboard if specified
     if args.dashboard:
@@ -73,6 +138,7 @@ def main():
             webbrowser.open_new("http://127.0.0.1:8050/")
         
         Timer(1, open_browser).start()
+        from forensic_telco_analyzer.dashboard import app
         app.run_server(debug=True, port=8050)
     
     # If no input files specified, show help
@@ -258,22 +324,177 @@ def process_correlation(cdr_file, ipdr_file, tdr_file, output_dir):
 def process_osint(cdr_file, api_key, output_dir):
     """Perform OSINT lookups for phone numbers in CDR data."""
     logging.info("Starting OSINT lookups...")
-    
-    cdr_data = pd.read_csv(cdr_file)
-    unique_numbers = cdr_data['source_number'].unique()
-    
+
+    # Load CDR data
+    try:
+        cdr_data = pd.read_csv(cdr_file)
+        unique_numbers = cdr_data['source_number'].unique()
+        logging.info(f"Processing {len(unique_numbers)} unique phone numbers for OSINT lookup...")
+    except Exception as e:
+        logging.error(f"Failed to load CDR file: {cdr_file}. Error: {str(e)}")
+        return
+
+    # Initialize the lookup service
     lookup_service = PhoneLookup(api_key)
     results = []
-    
-    for number in unique_numbers[:50]:  # Limit to first 50 numbers for demonstration
-        result = lookup_service.lookup_number(number)
-        results.append(result)
-    
+
+    # Perform lookups for the first 50 numbers (for demonstration purposes)
+    for number in unique_numbers[:50]:
+        try:
+            result = lookup_service.lookup_number(number)
+            results.append(result)
+            logging.info(f"Lookup successful for number: {number}")
+        except Exception as e:
+            logging.error(f"Failed to perform lookup for number: {number}. Error: {str(e)}")
+
+    # Save results to a CSV file
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, "osint_results.csv")
-    pd.DataFrame(results).to_csv(output_file, index=False)
-    
-    logging.info(f"OSINT lookups complete. Results saved to {output_file}.")
 
+    try:
+        pd.DataFrame(results).to_csv(output_file, index=False)
+        logging.info(f"OSINT lookups complete. Results saved to {output_file}.")
+    except Exception as e:
+        logging.error(f"Failed to save OSINT results to {output_file}. Error: {str(e)}")
+
+def correlate_osint_with_cdr(osint_file, cdr_file):
+    """Correlate OSINT results with CDR data."""
+    print("Correlating OSINT results with CDR data...")
+    
+    # Load OSINT and CDR data
+    osint_data = pd.read_csv(osint_file)
+    cdr_data = pd.read_csv(cdr_file)
+    
+    # Merge OSINT results with CDR data on phone numbers
+    merged_data = pd.merge(
+        cdr_data,
+        osint_data,
+        left_on='source_number',
+        right_on='Phone Number',
+        how='left'
+    )
+    
+    # Check if 'Carrier' exists in merged data
+    if 'Carrier' in merged_data.columns:
+        merged_data['Anomaly'] = merged_data['Carrier'].isnull()
+    else:
+        print("Warning: 'Carrier' column not found in OSINT results.")
+        merged_data['Anomaly'] = True  # Flag all rows as anomalies if 'Carrier' is missing
+        merged_data['Carrier'] = "Unknown"  # Add 'Carrier' column with default value
+        print("Added 'Carrier' column with default value 'Unknown'.")
+        print("Added 'Anomaly' column with default value True.")
+        print("Correlation complete. Found anomalies.")
+        return merged_data
+    
+    # Add flags for potential anomalies (e.g., unknown carriers)
+    merged_data['Anomaly'] = merged_data['Carrier'].isnull()
+    
+    print(f"Correlation complete. Found {merged_data['Anomaly'].sum()} anomalies.")
+    return merged_data
+
+def save_correlated_data(data, output_dir):
+    """Save correlated data to a CSV file."""
+    os.makedirs(output_dir, exist_ok=True)
+    output_file = os.path.join(output_dir, "correlated_osint_cdr.csv")
+    data.to_csv(output_file, index=False)
+    print(f"Correlated data saved to {output_file}.")
+
+def process_osint_correlation(osint_file, cdr_file, output_dir):
+    """Perform correlation between OSINT results and CDR data."""
+    correlated_data = correlate_osint_with_cdr(osint_file, cdr_file)
+    
+    if correlated_data is not None:
+        os.makedirs(output_dir, exist_ok=True)
+        output_file = os.path.join(output_dir, "correlated_osint_cdr.csv")
+        correlated_data.to_csv(output_file, index=False)
+        print(f"Correlated data saved to {output_file}.")
+    else:
+        print("No correlated data to save.")
+
+def analyze_correlated_network(correlated_file):
+    """Perform network analysis on correlated data."""
+    print("Performing network analysis...")
+    
+    # Load correlated data
+    data = pd.read_csv(correlated_file)
+    
+    # Initialize NetworkAnalyzer
+    analyzer = NetworkAnalyzer(data)
+    
+    # Build graph and calculate centrality measures
+    analyzer.build_graph()
+    centrality_df = analyzer.calculate_centrality()
+    
+    # Save centrality measures
+    os.makedirs("data/processed", exist_ok=True)
+    centrality_df.to_csv("data/processed/centrality_measures.csv", index=False)
+    
+    # Visualize graph
+    analyzer.visualize_graph(output_file="data/processed/network_graph.png")
+
+
+def generate_pdf_report(output_dir):
+    """Generate a PDF report summarizing findings."""
+    pdf = FPDF()
+    pdf.set_auto_page_break(auto=True, margin=15)
+
+    # Title Page
+    pdf.add_page()
+    pdf.set_font("Arial", size=16)
+    pdf.cell(200, 10, txt="Forensic Telecommunications Analysis Report", ln=True, align='C')
+
+    # Add Centrality Measures
+    centrality_file = os.path.join(output_dir, "centrality_measures.csv")
+    if os.path.exists(centrality_file):
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Centrality Measures", ln=True)
+        
+        centrality_data = pd.read_csv(centrality_file)
+        for _, row in centrality_data.iterrows():
+            pdf.cell(200, 10, txt=f"Node: {row['Node']}, Degree: {row['Degree Centrality']:.2f}, "
+                                  f"Betweenness: {row['Betweenness Centrality']:.2f}, PageRank: {row['PageRank']:.2f}",
+                     ln=True)
+
+    # Add Network Graph
+    graph_file = os.path.join(output_dir, "network_graph.png")
+    if os.path.exists(graph_file):
+        pdf.add_page()
+        pdf.set_font("Arial", size=12)
+        pdf.cell(200, 10, txt="Network Graph", ln=True)
+        pdf.image(graph_file, x=10, y=30, w=180)
+
+    # Save PDF
+    report_path = os.path.join(output_dir, "analysis_report.pdf")
+    pdf.output(report_path)
+    logging.info(f"PDF report generated at {report_path}")
+
+
+def process_network_analysis(correlated_file, output_dir):
+    """Perform network analysis on the correlated data."""
+    try:
+        # Initialize NetworkAnalyzer with the correlated data file
+        analyzer = NetworkAnalyzer(correlated_file)
+        
+        # Build and visualize the graph
+        analyzer.build_graph()
+        graph_output = os.path.join(output_dir, "network_graph.png")
+        analyzer.visualize_graph(output_file=graph_output)
+        
+    except FileNotFoundError as e:
+        print(f"Error: {e}")
+    except Exception as e:
+        print(f"An unexpected error occurred during network analysis: {e}")
+
+# Example usage
 if __name__ == "__main__":
     main()
+
+import pandas as pd
+
+# Load OSINT data
+osint_file = 'data/processed/osint_results.csv'
+osint_data = pd.read_csv(osint_file)
+
+# Print column names
+print("OSINT Columns:", osint_data.columns.tolist())

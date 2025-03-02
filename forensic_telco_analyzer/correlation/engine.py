@@ -131,6 +131,28 @@ class CorrelationEngine:
         print("No comprehensive correlations found across all datasets.")
         return None
 
+    def correlate_osint_with_cdr(osint_file, cdr_file):
+        print("Correlating OSINT results with CDR data...")
+        
+        # Load OSINT and CDR data
+        osint_data = pd.read_csv(osint_file)
+        cdr_data = pd.read_csv(cdr_file)
+        
+        # Merge OSINT results with CDR data on phone numbers
+        merged_data = pd.merge(
+            cdr_data,
+            osint_data,
+            left_on='source_number',
+            right_on='Phone Number',
+            how='left'
+        )
+        
+        # Add flags for potential anomalies (e.g., unknown carriers)
+        merged_data['Anomaly'] = merged_data['Carrier'].isnull()
+        
+        print(f"Correlation complete. Found {merged_data['Anomaly'].sum()} anomalies.")
+        return merged_data
+
     def save_results(self, output_dir):
         """Save correlation results to CSV files."""
         os.makedirs(output_dir, exist_ok=True)

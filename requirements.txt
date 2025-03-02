@@ -16,6 +16,7 @@ geopy==2.3.0
 matplotlib==3.7.1
 plotly==5.14.0
 dash==2.9.0
+seaborn==0.11.2
 
 # Web framework
 django==4.1.7
@@ -23,3 +24,6 @@ djangorestframework==3.14.0
 
 # Testing
 pytest==7.3.1
+
+# PDF generation
+fpdf==1.7.2
