@@ -7,9 +7,11 @@ import logging
 load_dotenv()
 
 class PhoneLookup:
-    def __init__(self, api_key='68bfb234f6f7a0c0aee8d73fe31db1f5'):
+    def __init__(self, api_key=None):
         # Use the API key from the environment variable if not provided
         self.api_key = api_key or os.getenv('NUMVERIFY_API_KEY')
+        if not self.api_key:
+            raise ValueError("API key must be provided either as parameter or via NUMVERIFY_API_KEY environment variable")
         self.base_url = "http://apilayer.net/api/validate"  # Example API (Numverify)
 
     def lookup_number(self, phone_number):
@@ -23,7 +25,7 @@ class PhoneLookup:
             response = requests.get(self.base_url, params=params)
             if response.status_code == 200:
                 data = response.json()
-                print(f"API response for {phone_number}: {data}")  # Debug print statement
+                logging.debug(f"API response for {phone_number}: {data}")
                 if data.get('valid'):
                     return {
                         'Phone Number': phone_number,
@@ -34,7 +36,7 @@ class PhoneLookup:
                 else:
                     return {'Phone Number': phone_number, 'Error': 'Invalid number'}
             else:
-                print(f"Error fetching data for {phone_number}: {response.status_code}")
+                logging.error(f"Error fetching data for {phone_number}: {response.status_code}")
                 return {'Phone Number': phone_number, 'Error': f"API Error: {response.status_code}"}
         
         except Exception as e:

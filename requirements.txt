@@ -1,29 +1,35 @@
 # Core data processing
-pandas==2.0.0
-numpy==1.24.0
-scipy==1.10.1
+pandas>=2.0.0,<3.0.0
+numpy>=1.24.0,<2.0.0
+scipy>=1.10.1,<2.0.0
 
 # Network analysis
-pyshark==0.6.0
-scapy==2.5.0
-networkx==2.7.1
+pyshark>=0.6.0,<1.0.0
+scapy>=2.5.0,<3.0.0
+networkx>=2.8.0,<4.0.0
 
 # Geospatial processing
-folium==0.14.0
-geopy==2.3.0
+folium>=0.14.0,<1.0.0
+geopy>=2.3.0,<3.0.0
 
 # Visualization
-matplotlib==3.7.1
-plotly==5.14.0
-dash==2.9.0
-seaborn==0.11.2
+matplotlib>=3.7.1,<4.0.0
+plotly>=5.14.0,<6.0.0
+dash>=2.9.0,<3.0.0
+seaborn>=0.12.0,<1.0.0
 
 # Web framework
-django==4.1.7
-djangorestframework==3.14.0
+django>=4.2.0,<5.0.0
+djangorestframework>=3.14.0,<4.0.0
+
+# Environment variables
+python-dotenv>=1.0.0,<2.0.0
+
+# Requests for API calls
+requests>=2.31.0,<3.0.0
 
 # Testing
-pytest==7.3.1
+pytest>=7.3.1,<8.0.0
 
 # PDF generation
-fpdf==1.7.2
+fpdf>=1.7.2,<2.0.0

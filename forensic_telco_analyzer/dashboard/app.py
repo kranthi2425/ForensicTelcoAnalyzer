@@ -27,111 +27,10 @@ app = dash.Dash(__name__, suppress_callback_exceptions=True, assets_folder='asse
 server = app.server
 app.title = 'Forensic Telecommunications Analysis Dashboard'
 
-# Define the NetworkAnalyzer class
-class NetworkAnalyzer:
-    def __init__(self, correlated_file):
-        """
-        Initialize the NetworkAnalyzer with the path to the correlated data file.
-        Args:
-            correlated_file (str): Path to the correlated data CSV file.
-        """
-        if not correlated_file or not os.path.exists(correlated_file):
-            raise FileNotFoundError(f"File not found: {correlated_file}")
-        
-        logging.info(f"Loading correlated data from {correlated_file}...")
-        self.data = pd.read_csv(correlated_file)
-        self.graph = nx.Graph()
-
-    def build_graph(self):
-        """Build a graph from CDR data."""
-        logging.info("Building communication network graph...")
-        for _, row in self.data.iterrows():
-            src = row['source_number']
-            dst = row['destination_number']
-            if not self.graph.has_edge(src, dst):
-                self.graph.add_edge(src, dst, weight=1)
-            else:
-                self.graph[src][dst]['weight'] += 1
-        logging.info(f"Graph built with {self.graph.number_of_nodes()} nodes and {self.graph.number_of_edges()} edges.")
-
-    def calculate_centrality(self):
-        """Calculate centrality measures."""
-        logging.info("Calculating centrality measures...")
-        degree_centrality = nx.degree_centrality(self.graph)
-        betweenness_centrality = nx.betweenness_centrality(self.graph)
-        pagerank = nx.pagerank(self.graph)
-        
-        centrality_df = pd.DataFrame({
-            'Node': list(degree_centrality.keys()),
-            'Degree Centrality': list(degree_centrality.values()),
-            'Betweenness Centrality': list(betweenness_centrality.values()),
-            'PageRank': list(pagerank.values())
-        }).sort_values(by='PageRank', ascending=False)
-        
-        logging.info("Centrality measures calculated.")
-        return centrality_df
-
-    def visualize_graph(self, output_file=None):
-        """Visualize the communication network graph."""
-        logging.info("Visualizing the graph...")
-        pos = nx.spring_layout(self.graph, seed=42)
-        
-        # Draw the graph using Matplotlib
-        plt.figure(figsize=(12, 12))
-        nx.draw(
-            self.graph,
-            pos,
-            with_labels=True,
-            node_size=50,
-            font_size=8,
-            edge_color='gray',
-            node_color='skyblue',
-            alpha=0.7
-        )
-        
-        if output_file:
-            plt.savefig(output_file)
-            logging.info(f"Graph visualization saved to {output_file}.")
-        
-        plt.close()  # Close figure to free memory
-
-def analyze_correlated_network(correlated_file):
-    """Perform network analysis on correlated data."""
-    logging.info("Performing network analysis...")
-    
-    # Load correlated data
-    data = pd.read_csv(correlated_file)
-    
-    # Initialize NetworkAnalyzer
-    analyzer = NetworkAnalyzer(correlated_file)
-    
-    # Build graph and calculate centrality measures
-    analyzer.build_graph()
-    centrality_df = analyzer.calculate_centrality()
-    
-    # Save centrality measures
-    os.makedirs("data/processed", exist_ok=True)
-    centrality_df.to_csv("data/processed/centrality_measures.csv", index=False)
-    
-    # Visualize graph
-    static_dir = os.path.join(os.getcwd(), 'static')
-    if not os.path.exists(static_dir):
-        os.makedirs(static_dir)
-    graph_output_path = os.path.join(static_dir, 'network_graph.png')
-    analyzer.visualize_graph(output_file=graph_output_path)
-
-app.layout = html.Div([
-    html.H1("Network Analysis"),
-    dcc.Dropdown(
-        id='network-dropdown',
-        options=[
-            {'label': 'Option 1', 'value': 'value1'},
-            {'label': 'Option 2', 'value': 'value2'}
-        ],
-        placeholder="Select an option"
-    ),
-    html.Div(id='network-analysis-output')  # Output container
-])
+# Import NetworkAnalyzer from the analysis module
+import sys
+sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
+from analysis.network_analysis import NetworkAnalyzer
 
 # Define the layout of the dashboard
 app.layout = html.Div([
@@ -527,17 +426,25 @@ def update_map_content(selected_map):
     if not selected_map:
         # If no map is selected, display a message
         return html.Div('Please select a map to display.', style={'textAlign': 'center', 'marginTop': '20px'})
-    
+
     try:
+        # Validate file path to prevent path traversal
+        if not os.path.exists(selected_map) or not selected_map.endswith('.html'):
+            return html.Div('Invalid map file.', style={'textAlign': 'center', 'color': 'red'})
+
         # Dynamically create an iframe to display the selected HTML map
+        with open(selected_map, 'r') as map_file:
+            map_content = map_file.read()
+
         return html.Div([
             html.Iframe(
-                srcDoc=open(selected_map, 'r').read(),  # Dynamically load the HTML content
+                srcDoc=map_content,
                 style={'width': '100%', 'height': '600px', 'border': 'none'}
             )
         ])
     except Exception as e:
         # Handle errors gracefully and display an error message
+        logging.error(f"Error loading map {selected_map}: {str(e)}", exc_info=True)
         return html.Div(f"Error loading map: {str(e)}", style={'textAlign': 'center', 'color': 'red'})
 
 # Callback for Correlation content
@@ -630,8 +537,8 @@ def update_correlation_content(_):
 )
 def update_osint_content(_):
     osint_file = os.path.join('data', 'processed', 'osint_results.csv')
-    print(f"OSINT file path: {osint_file}")  # Debug print statement
-    
+    logging.debug(f"OSINT file path: {osint_file}")
+
     if os.path.exists(osint_file):
         try:
             osint_data = pd.read_csv(osint_file)

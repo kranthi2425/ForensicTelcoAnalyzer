@@ -14,17 +14,11 @@ import logging
 from datetime import datetime
 from fpdf import FPDF
 
+# Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
-
 
 # Load environment variables from .env file
 load_dotenv()
-
-# Access the API key
-api_key = os.getenv('NUMVERIFY_API_KEY')
-
-# Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
 # Add project root to path to enable absolute imports
 project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
@@ -43,17 +37,6 @@ from forensic_telco_analyzer.correlation.engine import CorrelationEngine
 from forensic_telco_analyzer.osint.phone_lookup import PhoneLookup
 from forensic_telco_analyzer.analysis.network_analysis import NetworkAnalyzer
 from forensic_telco_analyzer.dashboard.app import app
-from forensic_telco_analyzer.dashboard.app import analyze_correlated_network
-from forensic_telco_analyzer.dashboard.app import serve_static_content
-from forensic_telco_analyzer.dashboard.app import generate_network_dropdown_options
-from forensic_telco_analyzer.dashboard.app import update_network_content
-from forensic_telco_analyzer.dashboard.app import update_ipdr_content
-from forensic_telco_analyzer.dashboard.app import update_tdr_content
-from forensic_telco_analyzer.dashboard.app import update_cdr_content
-from forensic_telco_analyzer.dashboard.app import update_correlation_content
-from forensic_telco_analyzer.dashboard.app import update_osint_content
-from forensic_telco_analyzer.dashboard.app import update_network_graph
-from forensic_telco_analyzer.dashboard.app import update_ipdr_graph
 
 def main():
     parser = argparse.ArgumentParser(description='Forensic Telecommunications Analysis Tool')
@@ -102,31 +85,34 @@ def main():
     if args.correlate:
         process_correlation(args.cdr, args.ipdr, args.tdr, args.output)
 
-    # Check for OSINT API key
-    if not args.osint_api_key:
-        args.osint_api_key = os.environ.get("NUMVERIFY_API_KEY")
+    # Perform OSINT lookups if OSINT flags provided
+    if args.osint or args.correlate_osint:
+        # Check for OSINT API key
         if not args.osint_api_key:
-            raise ValueError("No OSINT API key provided. Use --osint-api-key or set NUMVERIFY_API_KEY.")
-    
-    # Perform OSINT lookups if specified
-    if args.osint_api_key:
-        process_osint(args.cdr, args.osint_api_key, args.output)
-    
-    # Correlate OSINT results with CDR data if both are provided    
-    if args.osint_api_key and args.cdr:
-        process_osint_correlation(
-            osint_file=os.path.join(args.output, "osint_results.csv"),
-            cdr_file=args.cdr,
-            output_dir=args.output
-        )
-        
-        correlated_file = os.path.join(args.output, "correlated_osint_cdr.csv")
-        
-        # Ensure correlation data exists before proceeding with network analysis
-        if os.path.exists(correlated_file):
-            process_network_analysis(correlated_file, args.output)
+            args.osint_api_key = os.environ.get("NUMVERIFY_API_KEY")
+
+        if not args.osint_api_key:
+            logging.error("OSINT analysis requested but no API key provided. Use --osint-api-key or set NUMVERIFY_API_KEY.")
+        elif args.cdr:
+            # Perform OSINT lookups
+            process_osint(args.cdr, args.osint_api_key, args.output)
+
+            # Correlate OSINT results with CDR data
+            process_osint_correlation(
+                osint_file=os.path.join(args.output, "osint_results.csv"),
+                cdr_file=args.cdr,
+                output_dir=args.output
+            )
+
+            # Perform network analysis on correlated data if requested
+            if args.network_analysis:
+                correlated_file = os.path.join(args.output, "correlated_osint_cdr.csv")
+                if os.path.exists(correlated_file):
+                    process_network_analysis(correlated_file, args.output)
+                else:
+                    logging.warning(f"Correlation file not found: {correlated_file}")
         else:
-            print(f"Correlation file not found: {correlated_file}")
+            logging.warning("OSINT analysis requires CDR data. Use --cdr to provide CDR file.")
 
     # Launch dashboard if specified
     if args.dashboard:
@@ -359,7 +345,7 @@ def process_osint(cdr_file, api_key, output_dir):
 
 def correlate_osint_with_cdr(osint_file, cdr_file):
     """Correlate OSINT results with CDR data."""
-    print("Correlating OSINT results with CDR data...")
+    logging.info("Correlating OSINT results with CDR data...")
     
     # Load OSINT and CDR data
     osint_data = pd.read_csv(osint_file)
@@ -378,18 +364,18 @@ def correlate_osint_with_cdr(osint_file, cdr_file):
     if 'Carrier' in merged_data.columns:
         merged_data['Anomaly'] = merged_data['Carrier'].isnull()
     else:
-        print("Warning: 'Carrier' column not found in OSINT results.")
+        logging.warning("'Carrier' column not found in OSINT results.")
         merged_data['Anomaly'] = True  # Flag all rows as anomalies if 'Carrier' is missing
         merged_data['Carrier'] = "Unknown"  # Add 'Carrier' column with default value
-        print("Added 'Carrier' column with default value 'Unknown'.")
-        print("Added 'Anomaly' column with default value True.")
-        print("Correlation complete. Found anomalies.")
+        logging.info("Added 'Carrier' column with default value 'Unknown'.")
+        logging.info("Added 'Anomaly' column with default value True.")
+        logging.info("Correlation complete. Found anomalies.")
         return merged_data
-    
+
     # Add flags for potential anomalies (e.g., unknown carriers)
     merged_data['Anomaly'] = merged_data['Carrier'].isnull()
-    
-    print(f"Correlation complete. Found {merged_data['Anomaly'].sum()} anomalies.")
+
+    logging.info(f"Correlation complete. Found {merged_data['Anomaly'].sum()} anomalies.")
     return merged_data
 
 def save_correlated_data(data, output_dir):
@@ -397,41 +383,19 @@ def save_correlated_data(data, output_dir):
     os.makedirs(output_dir, exist_ok=True)
     output_file = os.path.join(output_dir, "correlated_osint_cdr.csv")
     data.to_csv(output_file, index=False)
-    print(f"Correlated data saved to {output_file}.")
+    logging.info(f"Correlated data saved to {output_file}.")
 
 def process_osint_correlation(osint_file, cdr_file, output_dir):
     """Perform correlation between OSINT results and CDR data."""
     correlated_data = correlate_osint_with_cdr(osint_file, cdr_file)
-    
+
     if correlated_data is not None:
         os.makedirs(output_dir, exist_ok=True)
         output_file = os.path.join(output_dir, "correlated_osint_cdr.csv")
         correlated_data.to_csv(output_file, index=False)
-        print(f"Correlated data saved to {output_file}.")
+        logging.info(f"Correlated data saved to {output_file}.")
     else:
-        print("No correlated data to save.")
-
-def analyze_correlated_network(correlated_file):
-    """Perform network analysis on correlated data."""
-    print("Performing network analysis...")
-    
-    # Load correlated data
-    data = pd.read_csv(correlated_file)
-    
-    # Initialize NetworkAnalyzer
-    analyzer = NetworkAnalyzer(data)
-    
-    # Build graph and calculate centrality measures
-    analyzer.build_graph()
-    centrality_df = analyzer.calculate_centrality()
-    
-    # Save centrality measures
-    os.makedirs("data/processed", exist_ok=True)
-    centrality_df.to_csv("data/processed/centrality_measures.csv", index=False)
-    
-    # Visualize graph
-    analyzer.visualize_graph(output_file="data/processed/network_graph.png")
-
+        logging.warning("No correlated data to save.")
 
 def generate_pdf_report(output_dir):
     """Generate a PDF report summarizing findings."""
@@ -482,19 +446,9 @@ def process_network_analysis(correlated_file, output_dir):
         analyzer.visualize_graph(output_file=graph_output)
         
     except FileNotFoundError as e:
-        print(f"Error: {e}")
+        logging.error(f"Error: {e}")
     except Exception as e:
-        print(f"An unexpected error occurred during network analysis: {e}")
+        logging.error(f"An unexpected error occurred during network analysis: {e}", exc_info=True)
 
-# Example usage
 if __name__ == "__main__":
     main()
-
-import pandas as pd
-
-# Load OSINT data
-osint_file = 'data/processed/osint_results.csv'
-osint_data = pd.read_csv(osint_file)
-
-# Print column names
-print("OSINT Columns:", osint_data.columns.tolist())
